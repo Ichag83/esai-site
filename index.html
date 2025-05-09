@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ESAI Cidadania</title>
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+  <style>
+    :root {
+      --vermelho: #c62828;
+      --vermelho-claro: #e57373;
+      --cinza-claro: #f9f9f9;
+      --verde-claro: #81c784;
+      --verde-hover: #66bb6a;
+      --azul-escuro: #1a237e;
+      --fonte-principal: 'Inter', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--fonte-principal);
+      background-color: var(--cinza-claro);
+      margin: 0;
+      scroll-behavior: smooth;
+    }
+
+    header#header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1em 2em;
+      background-color: white;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    header#header h1 img {
+      height: 72px;
+    }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 1.5em;
+      margin: 0;
+      padding: 0;
+    }
+
+    nav ul li a {
+      text-decoration: none;
+      color: #333;
+      font-weight: 600;
+      padding: 8px 12px;
+      transition: color 0.3s ease;
+    }
+
+    nav ul li a:hover {
+      color: var(--vermelho);
+    }
+
+    nav ul li a.button {
+      background-color: var(--verde-claro);
+      border-radius: 20px;
+      color: white;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+
+    nav ul li a.button:hover {
+      background-color: var(--verde-hover);
+    }
+
+    #inicio.banner {
+      background-image: url('assets/images/banner-espanha.jpg');
+      background-size: cover;
+      background-position: center;
+      color: #ffffff;
+      text-align: center;
+      padding: 6em 2em 4em;
+    }
+
+    #inicio.banner h2 {
+      color: #ffffff;
+      text-shadow: 2px 2px 6px rgba(0,0,0,0.7);
+    }
+
+    .inner {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2em;
+      animation: fadeIn 1s ease-in-out both;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h2 {
+      color: var(--vermelho);
+      font-size: 2rem;
+      margin-bottom: 0.5em;
+    }
+
+    section {
+      transition: all 0.3s ease-in-out;
+      padding: 4em 1em;
+      background-color: white;
+    }
+
+    .icon-list li {
+      list-style: none;
+      margin: 1.5em 0;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+    }
+
+    .icon-list li i {
+      margin-right: 12px;
+      font-size: 1.2em;
+      color: var(--vermelho);
+    }
+
+    .cta {
+      background-color: var(--azul-escuro);
+      color: white;
+      text-align: center;
+    }
+
+    .cta a.button {
+      background-color: var(--verde-claro);
+      border: none;
+      color: white;
+      padding: 1em 2em;
+      font-size: 1.1em;
+      border-radius: 30px;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 1em;
+      transition: background-color 0.3s ease;
+    }
+
+    .cta a.button:hover {
+      background-color: var(--verde-hover);
+    }
+
+    footer#footer {
+      background: #222;
+      color: #ddd;
+      text-align: center;
+      padding: 2em 1em;
+    }
+
+    .social-icons a {
+      color: white;
+      margin: 0 10px;
+      font-size: 1.4em;
+      transition: color 0.3s ease;
+    }
+
+    .social-icons a:hover {
+      color: var(--verde-claro);
+    }
+
+    @media (max-width: 768px) {
+      nav ul {
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.5em;
+      }
+      .icon-list li {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- conteúdo permanece o mesmo -->
+</body>
+</html>
