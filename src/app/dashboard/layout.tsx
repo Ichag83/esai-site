@@ -43,6 +43,12 @@ export default async function DashboardLayout({
               >
                 Gerar
               </Link>
+              <Link
+                href="/dashboard/video"
+                className="text-gray-600 hover:text-gray-900"
+              >
+                Vídeo UGC
+              </Link>
             </nav>
           </div>
           <SignOutButton />

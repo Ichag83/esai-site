@@ -107,6 +107,119 @@ export interface GenerationInput {
   product_image_urls: string[];
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// UGC Blueprint prompt — generate a full video blueprint JSON
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const UGC_BLUEPRINT_SYSTEM_PROMPT = `You are a UGC (User-Generated Content) video director specializing in Brazilian performance ads for TikTok, Meta, and YouTube.
+Your task is to produce a complete video blueprint for a single UGC video.
+Return ONLY valid JSON matching the exact schema below. No markdown, no commentary, no extra keys.
+
+The output must describe a realistic UGC-style video with:
+- Smartphone aesthetic (not cinematic)
+- A Brazilian creator featuring the product (not a real person; original description only)
+- Natural ambient lighting, slight handheld feel, authentic Brazilian environment
+- Dialogue entirely in pt-BR
+- Specific scene-by-scene breakdown where each scene's "seconds" is "start-end" (integers)
+
+REQUIRED JSON SCHEMA:
+{
+  "video": {
+    "duration_s": <integer 8-60>,
+    "format": "9:16" | "16:9",
+    "style": "UGC selfie" | "UGC tripod" | "POV demo",
+    "language": "pt-BR"
+  },
+  "cast": [
+    {
+      "role": "creator",
+      "description": "<Brazilian-identifiable features; not a real person>",
+      "wardrobe": "<casual Brazilian everyday clothing>",
+      "voice": {
+        "gender": "female" | "male",
+        "accent": "br",
+        "energy": "calm" | "excited" | "serious"
+      }
+    }
+  ],
+  "product": {
+    "name": "<string>",
+    "category": "<string>",
+    "claims": ["<string>"],
+    "must_show": ["<what must appear on camera>"]
+  },
+  "scenes": [
+    {
+      "scene_id": "<s1, s2, ...>",
+      "seconds": "<start-end e.g. 0-3>",
+      "camera": {
+        "shot": "close-up" | "medium" | "wide",
+        "rig": "handheld selfie" | "tripod" | "overhead",
+        "movement": "static" | "slight shake" | "pan" | "push-in",
+        "lens": "smartphone"
+      },
+      "environment": "<specific Brazilian location/room description>",
+      "action": "<what the creator does in this scene>",
+      "dialogue": "<spoken pt-BR lines>",
+      "on_screen_text": "<overlay text or null>",
+      "audio_notes": "<background music style or null>",
+      "editing": "<cut timing or effects or null>"
+    }
+  ]
+}
+
+Rules:
+- All scenes must together cover exactly video.duration_s seconds (±2s allowed).
+- scene_id must be "s1", "s2", ... in sequence.
+- "seconds" format: "start-end" (integers, start < end, end ≤ duration_s).
+- Dialogue must be natural spoken pt-BR for a young Brazilian creator — conversational, not scripted-sounding.
+- Do NOT embed on_screen_text into the video prompt; keep it as a separate field for overlays.
+- Cast description must be original and must not reference any real person.
+- Anti-cinematic rules: no dramatic lighting, no slow motion, no heavy camera movements.
+Return JSON only.`;
+
+export interface BlueprintContext {
+  product_name: string;
+  category: string;
+  claims: string[];
+  must_show: string[];
+  persona_description: string;
+  wardrobe?: string;
+  voice_gender?: "female" | "male";
+  voice_energy?: "calm" | "excited" | "serious";
+  platform: "tiktok" | "meta" | "youtube";
+  format: "9:16" | "16:9";
+  duration_s: number;
+  creative_dna?: Record<string, unknown> | null;
+}
+
+export function buildBlueprintUserMessage(ctx: BlueprintContext): string {
+  const dnaSection = ctx.creative_dna
+    ? `\nCREATIVE DNA (from a successful ad — mimic its structure and hook patterns):\n${JSON.stringify(ctx.creative_dna, null, 2)}`
+    : "";
+
+  return `Create a UGC video blueprint for the following product:
+
+PRODUCT: ${ctx.product_name}
+CATEGORY: ${ctx.category}
+KEY CLAIMS: ${ctx.claims.join(", ")}
+MUST SHOW ON CAMERA: ${ctx.must_show.length > 0 ? ctx.must_show.join(", ") : "the product clearly"}
+
+CREATOR PERSONA:
+- Description: ${ctx.persona_description}
+- Wardrobe: ${ctx.wardrobe ?? "casual everyday Brazilian clothing"}
+- Voice gender: ${ctx.voice_gender ?? "female"}
+- Energy: ${ctx.voice_energy ?? "excited"}
+
+VIDEO SPECS:
+- Platform: ${ctx.platform}
+- Format: ${ctx.format}
+- Duration: ${ctx.duration_s} seconds
+- Style: UGC selfie (preferred for ${ctx.platform})
+${dnaSection}
+Return ONLY the JSON blueprint.`;
+}
+
 export function buildGenerationUserMessage(input: GenerationInput): string {
   const patternsList =
     input.patterns.length > 0

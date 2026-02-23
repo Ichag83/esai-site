@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 
 const BUCKET = "product-images";
+const SIGNED_URL_TTL = 3600; // seconds
 
 const CommitSchema = z.object({
   asset_id: z.string().uuid(),
@@ -71,13 +72,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Convert storage paths → public URLs
-    const image_urls = paths.map((p) => {
-      const { data } = supabase.storage.from(BUCKET).getPublicUrl(p);
-      return data.publicUrl;
-    });
+    // Generate signed read URLs via service client (bucket is private)
+    const service = await createServiceClient();
+    const { data: signedData, error: signErr } = await service.storage
+      .from(BUCKET)
+      .createSignedUrls(paths, SIGNED_URL_TTL);
 
-    // Mark READY
+    if (signErr || !signedData) {
+      console.error("[commit] createSignedUrls error:", signErr);
+      return NextResponse.json(
+        { error: "Could not create signed URLs" },
+        { status: 502 }
+      );
+    }
+
+    const image_urls = signedData.map((s) => s.signedUrl);
+
+    // Mark READY and store signed URLs
     const { data: updated, error: updateErr } = await supabase
       .from("product_assets")
       .update({
