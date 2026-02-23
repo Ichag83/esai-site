@@ -34,9 +34,9 @@ const ScriptSchema = z
 
 const EditingDirectionSchema = z
   .object({
-    pacing: z.enum(["fast", "medium"]),
-    cuts: z.enum(["many", "some"]),
-    framing: z.enum(["closeup", "mixed"]),
+    pacing: z.enum(["fast", "medium", "slow"]),
+    cuts: z.enum(["many", "some", "few"]),
+    framing: z.enum(["closeup", "mixed", "medium", "wide"]),
     notes: z.string(),
   })
   .strict();
