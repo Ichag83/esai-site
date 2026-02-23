@@ -89,6 +89,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Track the path on the asset row so commit can validate it
+    const { error: updateErr } = await supabase
+      .from("product_assets")
+      .update({ storage_paths: [...(asset.storage_paths ?? []), path] })
+      .eq("id", asset_id);
+
+    if (updateErr) {
+      console.error("[upload-url] storage_paths update error:", updateErr);
+      return NextResponse.json(
+        { error: "Failed to record upload path" },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json({
       signed_url: signedData.signedUrl,
       path,

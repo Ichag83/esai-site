@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     // Verify ownership + status
     const { data: asset, error: assetErr } = await supabase
       .from("product_assets")
-      .select("id, status")
+      .select("id, status, storage_paths")
       .eq("id", asset_id)
       .eq("user_id", user.id)
       .single();
@@ -48,6 +48,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Asset is already committed" },
         { status: 409 }
+      );
+    }
+
+    // Validate every path starts with the expected prefix
+    const prefix = `${user.id}/${asset_id}/`;
+    const badPrefix = paths.find((p) => !p.startsWith(prefix));
+    if (badPrefix) {
+      return NextResponse.json(
+        { error: `Path does not belong to this asset: ${badPrefix}` },
+        { status: 400 }
+      );
+    }
+
+    // Validate every committed path was registered during upload
+    const registered: string[] = asset.storage_paths ?? [];
+    const unregistered = paths.find((p) => !registered.includes(p));
+    if (unregistered) {
+      return NextResponse.json(
+        { error: `Path was not registered via upload-url: ${unregistered}` },
+        { status: 400 }
       );
     }
 
