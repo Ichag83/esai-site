@@ -1,0 +1,163 @@
+{
+  "name": "Campaign Dispatch ESAI - Fase 7 (Guarded Placeholder)",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "c1000000-0000-0000-0000-000000000001",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "contacts",
+        "limit": 50
+      },
+      "id": "c1000000-0000-0000-0000-000000000002",
+      "name": "Load audience",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [220, 0],
+      "credentials": { "supabaseApi": { "id": "Yk3j0i1R3GXTYARZ", "name": "GuruRag" } }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "conversation_state",
+        "limit": 1,
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            { "keyName": "org_id", "condition": "eq", "keyValue": "={{ $json.org_id }}" },
+            { "keyName": "phone", "condition": "eq", "keyValue": "={{ $json.phone }}" }
+          ]
+        }
+      },
+      "id": "c1000000-0000-0000-0000-000000000003",
+      "name": "Get state",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [440, 0],
+      "credentials": { "supabaseApi": { "id": "Yk3j0i1R3GXTYARZ", "name": "GuruRag" } }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "suppression_list",
+        "limit": 1,
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            { "keyName": "org_id", "condition": "eq", "keyValue": "={{ $node['Load audience'].json.org_id }}" },
+            { "keyName": "phone", "condition": "eq", "keyValue": "={{ $node['Load audience'].json.phone }}" },
+            { "keyName": "is_active", "condition": "eq", "keyValue": "true" }
+          ]
+        }
+      },
+      "id": "c1000000-0000-0000-0000-000000000004",
+      "name": "Check suppression",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [660, 0],
+      "credentials": { "supabaseApi": { "id": "Yk3j0i1R3GXTYARZ", "name": "GuruRag" } }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 },
+          "conditions": [
+            { "leftValue": "={{ !$json.id && !($node['Get state'].json.opt_out === true) && $node['Get state'].json.handoff_status !== 'open' }}", "rightValue": "true", "operator": { "type": "string", "operation": "equals" } }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "c1000000-0000-0000-0000-000000000005",
+      "name": "Guardrails passed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [880, 0]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "name": "message", "value": "={{ `Oi ${$node['Load audience'].json.name || ''}, temos novidades da ESAI para seu processo. Se preferir não receber, responda PARAR.` }}", "type": "string" }
+          ]
+        },
+        "includeOtherFields": true
+      },
+      "id": "c1000000-0000-0000-0000-000000000006",
+      "name": "Build campaign message",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1100, -60]
+    },
+    {
+      "parameters": { "amount": 1200, "unit": "milliseconds" },
+      "id": "c1000000-0000-0000-0000-000000000007",
+      "name": "Throttle",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [1300, -60]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.WHATSAPP_SERVER_URL }}/message/sendText/{{ $env.WHATSAPP_INSTANCE }}",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [ { "name": "apikey", "value": "={{ $env.WHATSAPP_API_KEY }}" } ] },
+        "sendBody": true,
+        "bodyParameters": { "parameters": [ { "name": "number", "value": "={{ $node['Load audience'].json.phone }}@s.whatsapp.net" }, { "name": "text", "value": "={{ $json.message }}" } ] }
+      },
+      "id": "c1000000-0000-0000-0000-000000000008",
+      "name": "Send campaign message",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [1500, -60],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "tableId": "workflow_events",
+        "fieldsUi": {
+          "fieldValues": [
+            { "fieldId": "trace_id", "fieldValue": "={{ `campaign:${$execution.id}` }}" },
+            { "fieldId": "workflow_id", "fieldValue": "={{ $workflow.id }}" },
+            { "fieldId": "execution_id", "fieldValue": "={{ $execution.id }}" },
+            { "fieldId": "node_name", "fieldValue": "Guardrails passed?" },
+            { "fieldId": "level", "fieldValue": "warn" },
+            { "fieldId": "event", "fieldValue": "guardrail_policy_block" },
+            { "fieldId": "payload", "fieldValue": "={{ { reason: 'suppression_or_optout_or_handoff', phone: $node['Load audience'].json.phone } }}" }
+          ]
+        }
+      },
+      "id": "c1000000-0000-0000-0000-000000000009",
+      "name": "Log campaign blocked",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1100, 80],
+      "credentials": { "supabaseApi": { "id": "Yk3j0i1R3GXTYARZ", "name": "GuruRag" } }
+    }
+  ],
+  "connections": {
+    "Manual Trigger": { "main": [[{ "node": "Load audience", "type": "main", "index": 0 }]] },
+    "Load audience": { "main": [[{ "node": "Get state", "type": "main", "index": 0 }]] },
+    "Get state": { "main": [[{ "node": "Check suppression", "type": "main", "index": 0 }]] },
+    "Check suppression": { "main": [[{ "node": "Guardrails passed?", "type": "main", "index": 0 }]] },
+    "Guardrails passed?": {
+      "main": [
+        [{ "node": "Build campaign message", "type": "main", "index": 0 }],
+        [{ "node": "Log campaign blocked", "type": "main", "index": 0 }]
+      ]
+    },
+    "Build campaign message": { "main": [[{ "node": "Throttle", "type": "main", "index": 0 }]] },
+    "Throttle": { "main": [[{ "node": "Send campaign message", "type": "main", "index": 0 }]] }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1", "availableInMCP": false },
+  "versionId": "fase7-campaign-placeholder-v1",
+  "id": "fase7CampaignWorkflow",
+  "tags": []
+}

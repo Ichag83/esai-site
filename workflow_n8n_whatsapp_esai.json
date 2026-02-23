@@ -1,0 +1,6199 @@
+{
+  "name": "Automação WhatsApp ESAI",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "1b651d1f-5e5b-45f7-a262-f37e3cc32c4f",
+      "name": "Webhook",
+      "webhookId": "d351880e-6769-4eeb-b1e0-c725d2906e5a"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1635f568-ae54-449d-8d33-efd11eb71f34",
+              "name": "instance",
+              "value": "={{ $json.body.instance }}",
+              "type": "string"
+            },
+            {
+              "id": "5d34ef04-5a05-4f2a-bdd6-e3c5ff49f41f",
+              "name": "remoteJid",
+              "value": "={{ $json.body.data.key.remoteJid }}",
+              "type": "string"
+            },
+            {
+              "id": "87e6c263-d1e4-4c42-b3bb-11aefa072e64",
+              "name": "fromMe",
+              "value": "={{ $json.body.data.key.fromMe }}",
+              "type": "string"
+            },
+            {
+              "id": "3e9b7ec6-c95f-410c-a3e6-d1cd7fe956ce",
+              "name": "pushname",
+              "value": "={{ $json.body.data.pushName }}",
+              "type": "string"
+            },
+            {
+              "id": "2da496ff-a1ec-480b-9b4e-6b96474f2c75",
+              "name": "conversation",
+              "value": "={{ $json.body.data.message.conversation }}",
+              "type": "string"
+            },
+            {
+              "id": "159e9dec-2e28-481a-a77a-1e2524d43257",
+              "name": "messagetype",
+              "value": "={{ $json.body.data.messageType }}",
+              "type": "string"
+            },
+            {
+              "id": "cd61c045-f4f4-442e-8519-5f9c80ae152e",
+              "name": "datetime",
+              "value": "={{ $json.body.date_time }}",
+              "type": "string"
+            },
+            {
+              "id": "34f48e7d-ddca-47a0-8379-6e05d311cff3",
+              "name": "server_url",
+              "value": "={{ $json.body.server_url }}",
+              "type": "string"
+            },
+            {
+              "id": "f6b0239c-c0ea-47f4-aa5e-9ffb9add263e",
+              "name": "apikey",
+              "value": "={{ $json.body.apikey }}",
+              "type": "string"
+            },
+            {
+              "id": "e0820d0a-facc-41db-8323-5722347f8048",
+              "name": "phone",
+              "value": "={{ ($json.body.data.key.remoteJid || \"\").split(\"@\")[0] }}",
+              "type": "string"
+            },
+            {
+              "id": "f6f9f906-44af-4fd5-8076-54dbefbd952d",
+              "name": "message_id",
+              "value": "={{ $json.body.data.key.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "1727f78d-9fcc-4311-91bf-70582d50b94b",
+      "name": "Dados"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "18914780-dd0f-496e-a3a9-9a38138d8db4",
+              "leftValue": "={{ $json.fromMe }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "c9a08a18-2075-4d05-a86b-506b5cbbad00",
+      "name": "é minha mensagem?"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        640,
+        -144
+      ],
+      "id": "589da63c-7593-4076-9ba7-058fabd9ccc0",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.messagetype }}",
+                    "rightValue": "conversation",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "7222feef-0591-4a74-bc7c-46162f0277fd"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "conversation"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "28feb2a8-fb78-4176-88c2-d4ea062bb2d1",
+                    "leftValue": "={{ $json.messagetype }}",
+                    "rightValue": "ephemeralMessage",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "ephemeralMessage"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "f040188f-a137-4f85-886b-89b57428f21b",
+                    "leftValue": "={{ $json.messagetype }}",
+                    "rightValue": "extendedtextMessage",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "extendedtextMessage"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "6c3d530e-81da-4b4d-b271-dd092748b249",
+                    "leftValue": "={{ $json.messagetype }}",
+                    "rightValue": "audioMessage",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "audioMessage"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "83963959-520b-43a1-8b29-90f375312430",
+                    "leftValue": "={{ $json.messagetype }}",
+                    "rightValue": "imageMessage",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "imageMessage"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c6dd3bed-3fa4-4d1b-a8f8-e50c480c15ad",
+                    "leftValue": "={{ $json.messagetype }}",
+                    "rightValue": "stickerMessage",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "stickerMessage"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "fdf93efb-939c-446e-92f1-2b5561f031de",
+                    "leftValue": "={{ $json.messagetype }}",
+                    "rightValue": "videoMessage",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "videoMessage"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        624,
+        96
+      ],
+      "id": "fd8dea0a-3a28-41de-9901-36874d2e0d42",
+      "name": "tipo de mensagem"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "54532ca8-dae8-4ae5-b937-6e45a40246d3",
+              "name": "message",
+              "value": "Não consegui entender bem seu áudio 😕 Se puder, me envie em texto ou um áudio mais curto.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1008,
+        384
+      ],
+      "id": "bede5e1e-0ca1-4d45-a101-c1c4f9024367",
+      "name": "Message Audio"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "54532ca8-dae8-4ae5-b937-6e45a40246d3",
+              "name": "message",
+              "value": "Desculpe, eu não consigo responder mensagens de imagens",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1008,
+        544
+      ],
+      "id": "cb01712e-f732-4101-bf8f-812444abf030",
+      "name": "Message Image"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "54532ca8-dae8-4ae5-b937-6e45a40246d3",
+              "name": "message",
+              "value": "Desculpe, eu não consigo responder mensagens de figurinhas",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1008,
+        688
+      ],
+      "id": "cd969f1d-ea76-492f-84ab-afc27811dc4b",
+      "name": "Message Figurinhas"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "54532ca8-dae8-4ae5-b937-6e45a40246d3",
+              "name": "message",
+              "value": "Desculpe, eu não consigo responder mensagens de vídeo ainda",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1008,
+        848
+      ],
+      "id": "c1bbb6e1-b29d-48cc-9117-bdc7dd0cf41d",
+      "name": "Message Video"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "aa7cba72-e551-46a7-85ea-fb53a61998c9",
+              "name": "message",
+              "value": "={{ $item(\"0\").$node[\"tipo de mensagem\"].json[\"conversation\"] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1008,
+        -176
+      ],
+      "id": "8adb4396-a72a-4d31-9f78-b816366a8caf",
+      "name": "Message Conversation"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "aa7cba72-e551-46a7-85ea-fb53a61998c9",
+              "name": "message",
+              "value": "={{ $json.body.data.message.ephemeralMessage.message.extendedTextMessage.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1008,
+        -32
+      ],
+      "id": "add478b7-ea8f-4533-a98b-5e6b1b853458",
+      "name": "Message Ephemeral"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "aa7cba72-e551-46a7-85ea-fb53a61998c9",
+              "name": "message",
+              "value": "={{ $json.body.data.message.extendedTextMessage.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1008,
+        112
+      ],
+      "id": "0a00046e-2eef-4b91-9fda-fe79bffe2bdd",
+      "name": "Message ExtendedMessage"
+    },
+    {
+      "parameters": {
+        "numberInputs": 4
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1344,
+        -48
+      ],
+      "id": "061a980e-da3a-4f39-a243-1a8ff55e78b9",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        2560,
+        96
+      ],
+      "id": "3458d283-27cd-46ac-affc-89c5fb67e0cd",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "v5h1dnlqb43ReATy",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Dados').item.json.remoteJid }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        2672,
+        96
+      ],
+      "id": "4e776366-60af-4daf-b5d0-831f2a01d785",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message }}",
+        "options": {
+          "systemMessage": "=🔐 JUAN v4 — Assistente Virtual ESAI Brasil\nPrompt de Sistema Oficial\nVARIÁVEIS DE CONTEXTO\n\nData atual: {{ new Date().toISOString().split('T')[0] }}\nNome do usuário: {{ $('Dados').item.json.pushname }}\nHorário atual: {{ new Date().toLocaleTimeString('pt-BR', {timeZone: 'America/Sao_Paulo'}) }}\n\n1️⃣ IDENTIDADE E PAPEL\n\nVocê é Juan, atendente da ESAI Brasil, especialista exclusivamente em cidadania espanhola, atuando via WhatsApp.\n\nSeu papel é:\n\nAvaliar rapidamente elegibilidade\nFiltrar casos inviáveis com clareza\nExplicar apenas vias legais disponíveis em 2026\nMapear documentação\n\nQualificar o lead antes de escalar\n\nEncaminhar para humano apenas quando necessário\n\nVocê NÃO é advogado.\nVocê NÃO fornece parecer jurídico formal.\nVocê NÃO promete resultado.\nVocê NÃO sugere brechas, atalhos ou “jeitinhos”.\n\nSeu objetivo é:\n\n✔ Clareza\n✔ Legalidade\n✔ Economia de tempo\n✔ Proteção da ESAI\n\n2️⃣ TOM DE VOZ\n\nSimpático, mas direto\n\nNo máximo 4–5 linhas por mensagem\n\n1 emoji por mensagem no máximo\n\nLinguagem simples\n\nUma pergunta por vez\n\nConversa natural\n\nNunca usar menus numerados\n\nNunca usar:\n\n“talvez ainda dê”\n\n“acho que consegue”\n\n“vamos tentar”\n\n“sempre dá um jeito”\n\n“pode ser que aceite”\n\n“depende do consulado”\n\nSubstituir por:\n\n“Com base nas regras atuais, essa via não está disponível.”\n\n“Pelas normas vigentes, não é possível.”\n\n“Esse caso precisa de análise individual.”\n\n3️⃣ 🚨 LEI DA MEMÓRIA DEMOCRÁTICA (LMD)\n\nA LMD encerrou definitivamente em 21/10/2025.\n\nNão houve prorrogação.\nNão há exceções para novos casos.\nConsulados não aceitam novos pedidos.\n\nSe NÃO tem protocolo anterior:\n\n{{pushname}}, preciso ser transparente:\n\nO prazo encerrou em 21/10/2025.\nSem protocolo até essa data, não é possível iniciar pela LMD.\n\nSe insistir:\n\nA informação oficial é essa. A ESAI trabalha apenas com a legislação vigente.\n\nNunca alimentar esperança.\n\n4️⃣ 👶 SOBRE MENORES\n\nA LMD não criou benefício exclusivo para menores.\n\nMenores só eram elegíveis se cumprissem os mesmos critérios de descendência e prazo.\n\nSe os pais não protocolaram até 21/10/2025, o menor não pode iniciar novo processo pela LMD.\n\n5️⃣ 🚫 PROIBIÇÃO DE ATALHOS\n\nSe perguntarem sobre:\n\nBrecha\n\nJeitinho\n\nEscritório que “consegue”\n\nDar entrada sem protocolo\n\nResponder:\n\nNão existe atalho legal após o encerramento da LMD.\nA ESAI não trabalha com promessas fora da legislação.\n\nNunca suavizar.\n\n6️⃣ ⚖️ SOBRE RESULTADO\n\nSe perguntarem “vocês garantem?”\n\nO deferimento depende exclusivamente das autoridades espanholas.\nA ESAI presta assessoria técnica, mas não pode garantir resultado.\n\nNunca prometer cidadania.\n\n7️⃣ VIAS DISPONÍVEIS EM 2026\nNacionalidade por Opção\n\nFilhos de espanhol nascido na Espanha → espanhóis de origem\n\nNetos → análise específica (escalar)\n\nBisnetos → via direta não disponível\n\nSempre que envolver netos/bisnetos → mapear antes de escalar.\n\nNacionalidade por Residência (2 anos)\n\nBrasileiros podem solicitar após 2 anos de residência legal e contínua na Espanha.\n\nRequisitos:\n\nResidência válida (turismo não conta)\n\nAntecedentes limpos\n\nCCSE\n\nIntegração\n\nPrazo após solicitar: 1 a 2 anos.\n\nNão existe regra de 5 meses.\n\nNacionalidade por Residência (1 ano)\n\nPara:\n\nCasados com espanhol\n\nNascidos na Espanha\n\nCasos específicos previstos em lei\n\nGolden Visa\n\nEncerrado em abril de 2025.\n\n8️⃣ 🔎 PRÉ-MAPEAMENTO OBRIGATÓRIO\n\nAntes de encaminhar para humano, Juan deve mapear melhor.\n\nPerguntar, uma por vez:\n\nQuem é o ascendente espanhol?\n\nOnde ele nasceu?\n\nHouve naturalização brasileira?\n\nExiste protocolo anterior?\n\nOnde o cliente mora?\n\nHá certidões já localizadas?\n\nNunca escalar na primeira dúvida.\n\nFazer pelo menos 2–3 perguntas antes de decidir escalar.\n\nExemplo:\n\n“Pra eu te orientar corretamente, seu pai nasceu na Espanha ou no Brasil?”\n\nSe após mapeamento ainda houver complexidade → escalar.\n\n9️⃣ ESCALAÇÃO PARA HUMANO\n\nEncaminhar apenas quando:\n\nCadeia geracional complexa\n\nPossível perda de nacionalidade\n\nPedido de parecer jurídico\n\nPedido de garantia\n\nInsistência em brecha\n\nCliente quer contratar\n\nNão resolvido após mapeamento\n\nMensagem:\n\nEsse ponto exige análise mais detalhada.\nVou encaminhar para um consultor da equipe avaliar com cuidado 😊\n\n🔟 MODELO COMERCIAL (SE INTERESSE REAL)\n\nAssessoria:\nR$ 4.000 (Pix)\nR$ 4.500 (até 5x)\n\nBusca Espanha: ~R$ 1.800\nCertidões Brasil: R$ 250–600\n\nA ESAI só cobra após localizar a certidão espanhola.\n\nNunca negociar valores pelo chat.\n\n11️⃣ BENEFÍCIOS (SE PERGUNTADO)\n\nPassaporte espanhol\nDireito de morar e trabalhar na UE\nDupla cidadania permitida\nTransmissão aos filhos\n\nNunca vender como promessa.\n\n12️⃣ PIX (SOMENTE SE NECESSÁRIO)\n\nChave Pix:\nCNPJ 10.767.198/0001-97\n\nNunca enviar proativamente.\n\n13️⃣ PRINCÍPIO CENTRAL\n\nSe houver dúvida:\n\nEscalar.\n\nMelhor dizer “não é possível” do que gerar expectativa falsa.\n\nJuan deve sempre proteger:\n\n✔ O cliente\n✔ A verdade legal\n✔ A reputação da ESAI"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        2576,
+        -144
+      ],
+      "id": "c158bb9a-1d1d-4cf6-a76b-dff49fe7c7e8",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "559ba01a-09ea-4c95-8436-9c01ce8452ba",
+              "name": "message",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2960,
+        -32
+      ],
+      "id": "036269ee-425c-4761-bd69-16721dfa4444",
+      "name": "mensagem do agente"
+    },
+    {
+      "parameters": {
+        "numberInputs": 11
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3168,
+        224
+      ],
+      "id": "8738cc6e-5ed9-457f-8634-ad3c114d9ceb",
+      "name": "mensagem final"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Dados').item.json.server_url }}/message/sendText/{{ $('Dados').item.json.instance }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $('Dados').item.json.apikey }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('Dados').item.json.remoteJid }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.message }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        3664,
+        256
+      ],
+      "id": "e62fc3d8-989a-4bdd-bb15-715fcf51ae88",
+      "name": "HTTP Request",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "amount": 20
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3440,
+        256
+      ],
+      "id": "07e40b55-a6f3-4472-b9ff-87b201cd0a6d",
+      "name": "Wait",
+      "webhookId": "2816a75d-34d2-4c0b-845a-2f3e06c82b60"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "57216342-a4c2-420e-aad6-b64c2a736908",
+              "name": "phone",
+              "value": "={{ ($node[\"Dados\"].json.remoteJid || \"\").split(\"@\")[0] }}",
+              "type": "string"
+            },
+            {
+              "id": "2d85544b-8cdd-4bbf-a060-2a46ed223352",
+              "name": "incoming_message",
+              "value": "={{ $json.message }}",
+              "type": "string"
+            },
+            {
+              "id": "13070244-3fa9-4646-8650-3cc605874d93",
+              "name": "org_id",
+              "value": "f33260e0-44f6-4f4a-bc83-55111c47c2d8",
+              "type": "string"
+            },
+            {
+              "id": "aecbb660-db3f-49b4-931e-b0d4126bb2a1",
+              "name": "channel_id",
+              "value": "3cbdbded-a656-4d03-9e85-92381932ed17",
+              "type": "string"
+            },
+            {
+              "id": "fe2ad8cb-7491-4d00-960f-b24586f2457c",
+              "name": "message_id",
+              "value": "={{ $node[\"Dados\"].json.message_id }}",
+              "type": "string"
+            },
+            {
+              "id": "8bbf9486-1cb8-4ddc-a126-32904f0a5f05",
+              "name": "input_modality",
+              "value": "={{ $json.messagetype === 'audioMessage' || $json.input_modality === 'audio' ? 'audio' : 'text' }}",
+              "type": "string"
+            },
+            {
+              "id": "0d7cffca-e9c6-40ea-8bc4-ce0f7ef6a37f",
+              "name": "transcribed_text",
+              "value": "={{ $json.transcribed_text || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "ddab04fa-41c7-4bdd-8412-477533b6f20f",
+              "name": "stt_status",
+              "value": "={{ $json.stt_status || 'not_applicable' }}",
+              "type": "string"
+            },
+            {
+              "id": "42af04dd-a7f9-462f-9d60-734748db3135",
+              "name": "stt_error",
+              "value": "={{ $json.stt_error || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "b21779cf-e3c8-4423-a61a-2be5809d6a38",
+              "name": "trace_id",
+              "value": "={{ $node[\"Dados\"].json.message_id || $execution.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1600,
+        -128
+      ],
+      "id": "8352fd04-2001-4056-87e3-25cb0456bee3",
+      "name": "Normalize IDs",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "contacts",
+        "limit": 1,
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "org_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.org_id }}"
+            },
+            {
+              "keyName": "phone",
+              "condition": "eq",
+              "keyValue": "={{ $json.phone }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1808,
+        -128
+      ],
+      "id": "44afec02-9a19-4761-8aa7-d9068567ff4e",
+      "name": "Get many rows",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "09e4bea0-41e0-45c9-b7d6-6a6fa850891b",
+              "leftValue": "={{$json.id}}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2032,
+        -128
+      ],
+      "id": "11cb8d5c-48f5-4aa4-bf6c-89fa0818c36c",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "tableId": "contacts",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "phone",
+              "fieldValue": "={{ $node[\"Normalize IDs\"].json.phone }}"
+            },
+            {
+              "fieldId": "org_id",
+              "fieldValue": "={{ $node[\"Normalize IDs\"].json.org_id }}"
+            },
+            {
+              "fieldId": "name",
+              "fieldValue": "={{ $node[\"Dados\"].json.pushname || $node[\"Dados\"].json.name || \"Sem nome\" }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2192,
+        0
+      ],
+      "id": "e74de746-52a1-4fd7-8a7b-c732517d5613",
+      "name": "Create a row",
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bd9dd2b3-b3b7-4968-8dde-c3885e5d16a6",
+              "name": "incoming_message",
+              "value": "={{ $item(\"0\").$node[\"Normalize IDs\"].json[\"incoming_message\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "66e37276-09fa-4524-9335-50802f1fb5ed",
+              "name": "message",
+              "value": "={{ $item(\"0\").$node[\"Normalize IDs\"].json[\"message\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "e161bfd2-fe37-4970-9203-49c44a419904",
+              "name": "channel_id",
+              "value": "={{ $item(\"0\").$node[\"Normalize IDs\"].json[\"channel_id\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "dd80c9a9-e899-4e22-ae48-e3a48f18dff4",
+              "name": "org_id",
+              "value": "={{ $item(\"0\").$node[\"Normalize IDs\"].json[\"org_id\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "966d89d3-53d5-44a1-bce8-52af00573c59",
+              "name": "message_id",
+              "value": "={{ $item(\"0\").$node[\"Normalize IDs\"].json[\"message_id\"] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2416,
+        -144
+      ],
+      "id": "b2ad0836-b946-455e-9647-a80393571cf9",
+      "name": "Attach message context"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "messages",
+        "limit": 1,
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "org_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.org_id }}"
+            },
+            {
+              "keyName": "channel_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.channel_id }}"
+            },
+            {
+              "keyName": "direction",
+              "condition": "eq",
+              "keyValue": "inbound"
+            },
+            {
+              "keyName": "message_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.message_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2576,
+        -304
+      ],
+      "id": "2a8ad6e1-df90-4f96-b448-2c97e487566d",
+      "name": "Check inbound duplicate",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e2cbce48-c8f0-4c37-82f3-0a22569c82f8",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2768,
+        -304
+      ],
+      "id": "f69cebfa-cf02-4121-bca8-413f3c01db92",
+      "name": "Inbound duplicado?"
+    },
+    {
+      "parameters": {
+        "tableId": "messages",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "org_id",
+              "fieldValue": "={{ $node[\"Attach message context\"].json.org_id }}"
+            },
+            {
+              "fieldId": "channel_id",
+              "fieldValue": "={{ $node[\"Attach message context\"].json.channel_id }}"
+            },
+            {
+              "fieldId": "direction",
+              "fieldValue": "inbound"
+            },
+            {
+              "fieldId": "message_id",
+              "fieldValue": "={{ $node[\"Attach message context\"].json.message_id }}"
+            },
+            {
+              "fieldId": "phone",
+              "fieldValue": "={{ $node[\"Normalize IDs\"].json.phone }}"
+            },
+            {
+              "fieldId": "remote_jid",
+              "fieldValue": "={{ $node[\"Dados\"].json.remoteJid }}"
+            },
+            {
+              "fieldId": "message_type",
+              "fieldValue": "={{ $node[\"Dados\"].json.messagetype }}"
+            },
+            {
+              "fieldId": "content_text",
+              "fieldValue": "={{ $node[\"Attach message context\"].json.message }}"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "received"
+            },
+            {
+              "fieldId": "raw_payload",
+              "fieldValue": "={{ $json.body || $node['Webhook'].json.body || null }}"
+            },
+            {
+              "fieldId": "trace_id",
+              "fieldValue": "={{ $node[\"Normalize IDs\"].json.trace_id || $execution.id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2960,
+        -304
+      ],
+      "id": "84566266-7e40-4db9-b3fd-89ed2810f75f",
+      "name": "Create inbound message",
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "messages",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "org_id",
+              "fieldValue": "={{ $node[\"Normalize IDs\"].json.org_id }}"
+            },
+            {
+              "fieldId": "channel_id",
+              "fieldValue": "={{ $node[\"Normalize IDs\"].json.channel_id }}"
+            },
+            {
+              "fieldId": "direction",
+              "fieldValue": "outbound"
+            },
+            {
+              "fieldId": "message_id",
+              "fieldValue": "={{ $json.key?.id || $json.id || $execution.id }}"
+            },
+            {
+              "fieldId": "phone",
+              "fieldValue": "={{ $node[\"Normalize IDs\"].json.phone }}"
+            },
+            {
+              "fieldId": "remote_jid",
+              "fieldValue": "={{ $node[\"Dados\"].json.remoteJid }}"
+            },
+            {
+              "fieldId": "message_type",
+              "fieldValue": "text"
+            },
+            {
+              "fieldId": "content_text",
+              "fieldValue": "={{ $node[\"mensagem final\"].json.message }}"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "={{ $json.outbound_status || ($json.error ? 'failed' : 'sent') }}"
+            },
+            {
+              "fieldId": "provider_message_id",
+              "fieldValue": "={{ $json.key?.id || $json.id || '' }}"
+            },
+            {
+              "fieldId": "raw_payload",
+              "fieldValue": "={{ $json }}"
+            },
+            {
+              "fieldId": "trace_id",
+              "fieldValue": "={{ $node[\"Normalize IDs\"].json.trace_id || $execution.id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        3888,
+        256
+      ],
+      "id": "1f2f2e22-b59a-4158-a261-f13e78b91f67",
+      "name": "Create outbound message",
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "tipos\n\nconversation\nephemeralMessage\nextendedtextMessage\n\naudioMessage\nimageMessage\nstickerMessage\nvideoMessage",
+        "height": 240
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        368,
+        688
+      ],
+      "typeVersion": 1,
+      "id": "7636b1ca-6798-4a24-9901-0c61892f9d88",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "conversation_state",
+        "limit": 1,
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "org_id",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Normalize IDs\"].json.org_id }}"
+            },
+            {
+              "keyName": "channel_id",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Normalize IDs\"].json.channel_id }}"
+            },
+            {
+              "keyName": "phone",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Normalize IDs\"].json.phone }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        3184,
+        -304
+      ],
+      "id": "0d5e0a17-09ea-4b43-b2b6-c8833cbef4b2",
+      "name": "Get conversation state",
+      "alwaysOutputData": true,
+      "continueOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "953e0f95-34d5-4c2c-bf61-a68f76d69709",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3392,
+        -304
+      ],
+      "id": "bb77a06a-7f8d-403e-a1bf-9e536ba5f00f",
+      "name": "State read error?"
+    },
+    {
+      "parameters": {
+        "tableId": "workflow_events",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "trace_id",
+              "fieldValue": "={{ $execution.id }}"
+            },
+            {
+              "fieldId": "workflow_id",
+              "fieldValue": "t9C1Znq4CdUHmt0S"
+            },
+            {
+              "fieldId": "execution_id",
+              "fieldValue": "={{ $execution.id }}"
+            },
+            {
+              "fieldId": "node_name",
+              "fieldValue": "Get conversation state"
+            },
+            {
+              "fieldId": "level",
+              "fieldValue": "warn"
+            },
+            {
+              "fieldId": "event",
+              "fieldValue": "conversation_state_read_failed"
+            },
+            {
+              "fieldId": "payload",
+              "fieldValue": "={{ $json }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        3600,
+        -400
+      ],
+      "id": "31d9d0d6-ceb2-4cd9-b7ec-3e57dce2f6b4",
+      "name": "Log state read error",
+      "continueOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "989fd8fe-b4af-4b04-8481-da7ebd7dd9d5",
+              "name": "state_exists",
+              "value": "={{ !!$json.id }}",
+              "type": "boolean"
+            },
+            {
+              "id": "1ade8f9c-c5da-4b1d-8e66-9d37d18f3579",
+              "name": "ai_paused",
+              "value": "={{ $json.ai_paused ?? false }}",
+              "type": "boolean"
+            },
+            {
+              "id": "8f95d647-112c-4e81-80d2-c40fdd764849",
+              "name": "handoff_status",
+              "value": "={{ $json.handoff_status || 'none' }}",
+              "type": "string"
+            },
+            {
+              "id": "f77f6204-4e8e-4828-8d40-0f8e955bcbac",
+              "name": "state",
+              "value": "={{ $json.state || 'qualifying' }}",
+              "type": "string"
+            },
+            {
+              "id": "8b793bf0-7c47-49ea-a2ff-4e4afcb33626",
+              "name": "last_intent",
+              "value": "={{ ($node[\"Attach message context\"].json.message || '').toLowerCase().includes('humano') ? 'handoff_request' : 'general' }}",
+              "type": "string"
+            },
+            {
+              "id": "a54db2a7-9bec-4b23-8d31-d7ace30028c7",
+              "name": "opt_out",
+              "value": "={{ $json.opt_out ?? false }}",
+              "type": "boolean"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3824,
+        -304
+      ],
+      "id": "e3084ae0-7ca5-4bee-a6f0-c7bc2186294f",
+      "name": "Normalize conversation state"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d68b0f4c-f11a-4df2-bd16-525d11ca2fa5",
+              "leftValue": "={{ $json.state_exists }}",
+              "rightValue": "={{ true }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4032,
+        -432
+      ],
+      "id": "5f5612d1-7040-49ea-8150-a10cc28495a2",
+      "name": "State exists?"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "conversation_state",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "org_id",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Normalize IDs\"].json.org_id }}"
+            },
+            {
+              "keyName": "channel_id",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Normalize IDs\"].json.channel_id }}"
+            },
+            {
+              "keyName": "phone",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Normalize IDs\"].json.phone }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "last_inbound_at",
+              "fieldValue": "={{ $now }}"
+            },
+            {
+              "fieldId": "last_intent",
+              "fieldValue": "={{ $node[\"Normalize conversation state\"].json.last_intent }}"
+            },
+            {
+              "fieldId": "state",
+              "fieldValue": "={{ $node[\"Normalize conversation state\"].json.state || 'qualifying' }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        4256,
+        -496
+      ],
+      "id": "6dfaf4d9-605b-4f73-9ff3-cce9ebbf45ad",
+      "name": "Update conversation state inbound",
+      "continueOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "conversation_state",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "org_id",
+              "fieldValue": "={{ $node[\"Normalize IDs\"].json.org_id }}"
+            },
+            {
+              "fieldId": "channel_id",
+              "fieldValue": "={{ $node[\"Normalize IDs\"].json.channel_id }}"
+            },
+            {
+              "fieldId": "phone",
+              "fieldValue": "={{ $node[\"Normalize IDs\"].json.phone }}"
+            },
+            {
+              "fieldId": "state",
+              "fieldValue": "qualifying"
+            },
+            {
+              "fieldId": "ai_paused",
+              "fieldValue": "false"
+            },
+            {
+              "fieldId": "handoff_status",
+              "fieldValue": "none"
+            },
+            {
+              "fieldId": "last_inbound_at",
+              "fieldValue": "={{ $now }}"
+            },
+            {
+              "fieldId": "last_intent",
+              "fieldValue": "={{ $node[\"Normalize conversation state\"].json.last_intent }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        4256,
+        -368
+      ],
+      "id": "f745d8a8-5521-46ce-be98-c3857159b1f4",
+      "name": "Create conversation state inbound",
+      "continueOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a4bb2f40-ab95-4bdb-a00c-2f4a5686f350",
+              "leftValue": "={{ $json.ai_paused }}",
+              "rightValue": "={{ true }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "8ff8a204-b91d-413d-8f7e-697f930140f2",
+              "leftValue": "={{ $json.handoff_status }}",
+              "rightValue": "open",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4240,
+        -224
+      ],
+      "id": "75dbbd51-b86d-4a39-97db-98a20b6a98a8",
+      "name": "IA pausada/handoff aberto?"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "50e9d8d8-8f87-413a-9def-f5bb56b43a00",
+              "name": "message",
+              "value": "Esse ponto exige análise mais detalhada. Vou encaminhar para um consultor da equipe avaliar com cuidado 😊",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4464,
+        -224
+      ],
+      "id": "69a2316d-a1ea-4b9e-822e-d62230eb8d44",
+      "name": "Message Handoff"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "conversation_state",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "org_id",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Normalize IDs\"].json.org_id }}"
+            },
+            {
+              "keyName": "channel_id",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Normalize IDs\"].json.channel_id }}"
+            },
+            {
+              "keyName": "phone",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Normalize IDs\"].json.phone }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "last_outbound_at",
+              "fieldValue": "={{ $now }}"
+            },
+            {
+              "fieldId": "state",
+              "fieldValue": "={{ $node[\"Normalize conversation state\"].json.handoff_status === 'open' ? 'handoff' : $node[\"Normalize conversation state\"].json.state }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        4112,
+        256
+      ],
+      "id": "9c11c1a5-94c5-419d-bd66-393767dc4088",
+      "name": "Update conversation state outbound",
+      "continueOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = String($json.message || '').toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').trim();\n\nconst rules = [\n  { intent: 'HUMAN_HANDOFF', confidence: 0.97, rule: 'handoff_keywords', re: /(falar com humano|atendente|consultor|pessoa real|atendimento humano)/i },\n  { intent: 'OPT_OUT', confidence: 0.99, rule: 'opt_out_keywords', re: /(\\bparar\\b|\\bsair\\b|nao me chama|nao quero mensagens|remover meu numero|descadastrar)/i },\n  { intent: 'GREETING', confidence: 0.95, rule: 'greeting_keywords', re: /^(oi|ola|olá|bom dia|boa tarde|boa noite)\\b/i },\n  { intent: 'PRICING_INTEREST', confidence: 0.96, rule: 'pricing_keywords', re: /(preco|preço|valor|quanto custa|investimento|formas de pagamento)/i },\n  { intent: 'STATUS_REQUEST', confidence: 0.95, rule: 'status_keywords', re: /(status|andamento|como esta meu processo|como está meu processo|meu processo)/i },\n  { intent: 'SCHEDULING_INTENT', confidence: 0.96, rule: 'scheduling_keywords', re: /(agendar|marcar horario|marcar horário|agenda|marcar consulta)/i },\n];\n\nlet match = rules.find(r => r.re.test(text));\n\nreturn [{\n  ...$json,\n  detected_intent: match ? match.intent : 'UNKNOWN',\n  intent_confidence: match ? match.confidence : 0.0,\n  matched_rule: match ? match.rule : 'no_match',\n  handled_by: match ? 'deterministic_router' : 'llm'\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4464,
+        -64
+      ],
+      "id": "5f95db6d-0ca0-4fdd-826d-87984665f15e",
+      "name": "Classify deterministic intent"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "conversation_state",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "org_id",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Normalize IDs\"].json.org_id }}"
+            },
+            {
+              "keyName": "channel_id",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Normalize IDs\"].json.channel_id }}"
+            },
+            {
+              "keyName": "phone",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Normalize IDs\"].json.phone }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "last_intent",
+              "fieldValue": "={{ $json.detected_intent }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        4688,
+        -64
+      ],
+      "id": "8898d4bd-c5aa-40b5-8922-e30f95db54a8",
+      "name": "Update state last_intent",
+      "continueOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "8f9d4078-c61a-460e-a40c-4d611f1f1df7",
+                    "leftValue": "={{ $json.detected_intent }}",
+                    "rightValue": "HUMAN_HANDOFF",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "HUMAN_HANDOFF"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "be0ff7a5-28b4-4c66-8f08-f02c587dce8e",
+                    "leftValue": "={{ $json.detected_intent }}",
+                    "rightValue": "OPT_OUT",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "OPT_OUT"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "d9d3a77a-5f58-4a89-a5d2-b9d639f528c4",
+                    "leftValue": "={{ $json.detected_intent }}",
+                    "rightValue": "GREETING",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "GREETING"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "11c61111-51c3-4f81-bb23-dd603cf21c66",
+                    "leftValue": "={{ $json.detected_intent }}",
+                    "rightValue": "PRICING_INTEREST",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "PRICING_INTEREST"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "4e6d7f44-f9ca-4d61-b225-078e334d4f4e",
+                    "leftValue": "={{ $json.detected_intent }}",
+                    "rightValue": "STATUS_REQUEST",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "STATUS_REQUEST"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "d0be4134-aad0-43bb-915b-2ae09c97247c",
+                    "leftValue": "={{ $json.detected_intent }}",
+                    "rightValue": "SCHEDULING_INTENT",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "SCHEDULING_INTENT"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        4912,
+        -64
+      ],
+      "id": "47895daa-9094-422d-a32e-3374cc61f91d",
+      "name": "Deterministic intent switch"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "conversation_state",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "org_id",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Normalize IDs\"].json.org_id }}"
+            },
+            {
+              "keyName": "channel_id",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Normalize IDs\"].json.channel_id }}"
+            },
+            {
+              "keyName": "phone",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Normalize IDs\"].json.phone }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "handoff_status",
+              "fieldValue": "open"
+            },
+            {
+              "fieldId": "ai_paused",
+              "fieldValue": "true"
+            },
+            {
+              "fieldId": "state",
+              "fieldValue": "handoff"
+            },
+            {
+              "fieldId": "last_intent",
+              "fieldValue": "HUMAN_HANDOFF"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        5152,
+        -224
+      ],
+      "id": "5d57f48e-fd89-412b-a9ad-f8f93980f4a1",
+      "name": "Update state handoff",
+      "continueOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "db35e95f-f49b-4a1f-9442-728b8bf89a14",
+              "name": "message",
+              "value": "Entendi. Vou te encaminhar para um consultor da equipe te atender com prioridade 😊",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        5376,
+        -224
+      ],
+      "id": "96ab4fb4-8d8f-49a5-9658-f9b9237f0261",
+      "name": "Message Human Handoff Deterministic"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "conversation_state",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "org_id",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Normalize IDs\"].json.org_id }}"
+            },
+            {
+              "keyName": "channel_id",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Normalize IDs\"].json.channel_id }}"
+            },
+            {
+              "keyName": "phone",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Normalize IDs\"].json.phone }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "opt_out",
+              "fieldValue": "true"
+            },
+            {
+              "fieldId": "last_intent",
+              "fieldValue": "OPT_OUT"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        5152,
+        -96
+      ],
+      "id": "c4ccf9b7-4dfb-4c6d-88dc-6f9a165fd91f",
+      "name": "Update state opt-out",
+      "continueOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "842026d7-ef72-406d-8fd0-f8634ff6b7fd",
+              "name": "message",
+              "value": "Perfeito, vou pausar as mensagens por aqui. Se precisar voltar, é só me chamar com um oi.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        5376,
+        -96
+      ],
+      "id": "12d381d5-af5d-4254-af44-a51ffd1472bd",
+      "name": "Message Opt-out"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3f4d208d-d9f5-4e7f-bbe9-4cb9963875cc",
+              "name": "message",
+              "value": "Olá! Eu sou o Juan da ESAI 😊 Posso te ajudar a entender sua elegibilidade para cidadania espanhola. Você já sabe quem é o ascendente espanhol da família?",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        5376,
+        32
+      ],
+      "id": "0b815f05-342d-4692-8cf0-fef6d6bc5db3",
+      "name": "Message Greeting"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "97ef0b35-ec0d-4f54-aa57-cd07f08f7ff5",
+              "name": "message",
+              "value": "Sobre valores: a assessoria é R$ 4.000 no Pix ou R$ 4.500 em até 5x. Se quiser, te conecto com um consultor para validar seu caso e próximos passos.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        5376,
+        160
+      ],
+      "id": "80f97d50-9e1b-4e6a-8d47-d8ec08f55d48",
+      "name": "Message Pricing"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9a7ed3d2-cb4a-4fcb-9a47-3e07ad656f42",
+              "name": "message",
+              "value": "Consigo te atualizar melhor com um dado de referência. Você tem número de protocolo ou nome completo de quem iniciou o processo?",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        5376,
+        288
+      ],
+      "id": "f816127c-9f6a-41fd-9f55-159266a8eb42",
+      "name": "Message Status"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f3c5a2f6-c250-4d9b-a143-b809d9f4249e",
+              "name": "message",
+              "value": "Perfeito, posso te ajudar com o agendamento. Vou encaminhar para o time confirmar os horários disponíveis e te retornar por aqui.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        5376,
+        416
+      ],
+      "id": "a7fcc1ce-cb6a-4fa8-ad57-c5108f66e3c9",
+      "name": "Message Scheduling"
+    },
+    {
+      "parameters": {
+        "tableId": "workflow_events",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "trace_id",
+              "fieldValue": "={{ $execution.id }}"
+            },
+            {
+              "fieldId": "workflow_id",
+              "fieldValue": "t9C1Znq4CdUHmt0S"
+            },
+            {
+              "fieldId": "execution_id",
+              "fieldValue": "={{ $execution.id }}"
+            },
+            {
+              "fieldId": "node_name",
+              "fieldValue": "Deterministic intent switch"
+            },
+            {
+              "fieldId": "level",
+              "fieldValue": "info"
+            },
+            {
+              "fieldId": "event",
+              "fieldValue": "routed_deterministic"
+            },
+            {
+              "fieldId": "payload",
+              "fieldValue": "={{ { intent: $node['Classify deterministic intent'].json.detected_intent, matched_rule: $node['Classify deterministic intent'].json.matched_rule, intent_confidence: $node['Classify deterministic intent'].json.intent_confidence } }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        5600,
+        160
+      ],
+      "id": "8bcbf4ff-4870-4d05-8d7f-69cbf24b4d31",
+      "name": "Log deterministic handled",
+      "continueOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "20ba8d7f-57f2-4f0f-bf55-78df1f430818",
+              "name": "audio_url",
+              "value": "={{ $json.body?.data?.message?.audioMessage?.url || $json.body?.data?.message?.audioMessage?.directPath || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "e8ad0a10-1239-4eb8-b725-4119d9f00f72",
+              "name": "audio_duration",
+              "value": "={{ Number($json.body?.data?.message?.audioMessage?.seconds || 0) }}",
+              "type": "number"
+            },
+            {
+              "id": "67ce3d73-84a4-496c-8dd7-6b4bc0a494fd",
+              "name": "audio_mime_type",
+              "value": "={{ $json.body?.data?.message?.audioMessage?.mimetype || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "6f5b9d2a-9dad-429d-953f-e081bf0beadf",
+              "name": "audio_size",
+              "value": "={{ Number($json.body?.data?.message?.audioMessage?.fileLength || 0) }}",
+              "type": "number"
+            },
+            {
+              "id": "3ac9f4f6-7156-4a2d-a54d-69e7827cc7c9",
+              "name": "input_modality",
+              "value": "audio",
+              "type": "string"
+            },
+            {
+              "id": "bd05c37b-9e5c-4dca-85fb-6e86772e4985",
+              "name": "stt_status",
+              "value": "pending",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1216,
+        384
+      ],
+      "id": "7d8478f2-4ae2-49a7-9e11-c0dbdcf70ef6",
+      "name": "Extract Audio Metadata"
+    },
+    {
+      "parameters": {
+        "tableId": "workflow_events",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "trace_id",
+              "fieldValue": "={{ $execution.id }}"
+            },
+            {
+              "fieldId": "workflow_id",
+              "fieldValue": "t9C1Znq4CdUHmt0S"
+            },
+            {
+              "fieldId": "execution_id",
+              "fieldValue": "={{ $execution.id }}"
+            },
+            {
+              "fieldId": "node_name",
+              "fieldValue": "Extract Audio Metadata"
+            },
+            {
+              "fieldId": "level",
+              "fieldValue": "info"
+            },
+            {
+              "fieldId": "event",
+              "fieldValue": "audio_received"
+            },
+            {
+              "fieldId": "payload",
+              "fieldValue": "={{ { message_id: $node['Dados'].json.message_id, mime_type: $json.audio_mime_type, duration: $json.audio_duration, size: $json.audio_size } }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1424,
+        384
+      ],
+      "id": "2e311b72-62a8-4456-a27f-95a6b95791af",
+      "name": "Log audio received",
+      "continueOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8001a7f8-25ad-4674-a9f8-f4d876cb7f88",
+              "leftValue": "={{ $json.audio_duration }}",
+              "rightValue": 180,
+              "operator": {
+                "type": "number",
+                "operation": "larger"
+              }
+            },
+            {
+              "id": "f606f5db-9f40-4ec2-9f5a-f7204c4d26b2",
+              "leftValue": "={{ $json.audio_size }}",
+              "rightValue": 5242880,
+              "operator": {
+                "type": "number",
+                "operation": "larger"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1632,
+        384
+      ],
+      "id": "42a31f03-84dc-4f36-b5e6-cc945f2488dc",
+      "name": "Audio muito longo?"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "295f41d2-376f-4f77-a80b-03ea9d126b31",
+              "name": "message",
+              "value": "Seu áudio ficou muito longo para eu processar aqui. Pode me enviar em texto ou dividir em áudios menores?",
+              "type": "string"
+            },
+            {
+              "id": "3d34405d-9e7a-45e9-93fd-d72c1ef6cd66",
+              "name": "stt_status",
+              "value": "limit_exceeded",
+              "type": "string"
+            },
+            {
+              "id": "bb694ed7-73d6-44c1-80d8-3640f4f92d7b",
+              "name": "stt_error",
+              "value": "audio_limit_exceeded",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1840,
+        288
+      ],
+      "id": "1f39cbe4-0f98-4ff8-b1f2-5b32e1df6e10",
+      "name": "Message Audio Too Long"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.audio_url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $('Dados').item.json.apikey }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "audio"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1840,
+        464
+      ],
+      "id": "bc6ee0f4-b1a5-4983-b6cc-6e3933ad90c5",
+      "name": "Download Audio",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/audio/transcriptions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.OPENAI_API_KEY}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "gpt-4o-mini-transcribe"
+            },
+            {
+              "name": "language",
+              "value": "pt"
+            }
+          ]
+        },
+        "sendBinaryData": true,
+        "binaryPropertyName": "audio",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2048,
+        464
+      ],
+      "id": "d3fbe044-a26f-4055-a9d6-0d3e7a16c912",
+      "name": "Transcribe Audio (STT)",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4af3f58b-8738-49a2-99a2-1f4d8fe3e84f",
+              "leftValue": "={{ $json.text }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2256,
+        464
+      ],
+      "id": "f1f77ebd-0e67-4e26-b017-dcefae6f7c2a",
+      "name": "STT sucesso?"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e50c8bc9-e9cf-4ba5-a40e-8f7cc76f8f8a",
+              "name": "message",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "ef0ea118-6b57-4cc4-ac84-a2dcf05765af",
+              "name": "transcribed_text",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "e6fef537-64de-4916-bb68-f3f03abcc6f9",
+              "name": "input_modality",
+              "value": "audio",
+              "type": "string"
+            },
+            {
+              "id": "abaef236-6d14-4434-aafe-b49eb587ca79",
+              "name": "stt_status",
+              "value": "success",
+              "type": "string"
+            },
+            {
+              "id": "48c014d4-d2ab-4eb1-a8fb-22ebf6338ee5",
+              "name": "handled_by",
+              "value": "audio_stt",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2464,
+        416
+      ],
+      "id": "ae2d8ca1-4783-4c72-95e1-f5cb0f53204f",
+      "name": "Message from Audio STT"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2250f742-4f4f-4ce8-a4c6-ab096f241be3",
+              "name": "message",
+              "value": "Não consegui entender bem seu áudio 😕 Se puder, me envie em texto ou um áudio mais curto.",
+              "type": "string"
+            },
+            {
+              "id": "6d4fd4a3-3e4d-4a86-8345-f1d455c7d337",
+              "name": "input_modality",
+              "value": "audio",
+              "type": "string"
+            },
+            {
+              "id": "903d6a15-ad8a-43d3-9160-087673d8cdd2",
+              "name": "stt_status",
+              "value": "error",
+              "type": "string"
+            },
+            {
+              "id": "f4e33de0-a862-4f13-b0c8-df312902f44f",
+              "name": "stt_error",
+              "value": "={{ $json.error?.message || 'transcription_failed' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2464,
+        544
+      ],
+      "id": "91707039-46f2-4257-91e5-4e3c5f39bf89",
+      "name": "Message Audio STT Fallback"
+    },
+    {
+      "parameters": {
+        "tableId": "workflow_events",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "trace_id",
+              "fieldValue": "={{ $execution.id }}"
+            },
+            {
+              "fieldId": "workflow_id",
+              "fieldValue": "t9C1Znq4CdUHmt0S"
+            },
+            {
+              "fieldId": "execution_id",
+              "fieldValue": "={{ $execution.id }}"
+            },
+            {
+              "fieldId": "node_name",
+              "fieldValue": "Transcribe Audio (STT)"
+            },
+            {
+              "fieldId": "level",
+              "fieldValue": "info"
+            },
+            {
+              "fieldId": "event",
+              "fieldValue": "audio_transcribed"
+            },
+            {
+              "fieldId": "payload",
+              "fieldValue": "={{ { stt_status: $json.stt_status, chars: ($json.message || '').length } }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2672,
+        416
+      ],
+      "id": "319070f7-1458-46f4-81d2-503c1eca61f8",
+      "name": "Log audio transcribed",
+      "continueOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "workflow_events",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "trace_id",
+              "fieldValue": "={{ $execution.id }}"
+            },
+            {
+              "fieldId": "workflow_id",
+              "fieldValue": "t9C1Znq4CdUHmt0S"
+            },
+            {
+              "fieldId": "execution_id",
+              "fieldValue": "={{ $execution.id }}"
+            },
+            {
+              "fieldId": "node_name",
+              "fieldValue": "Transcribe Audio (STT)"
+            },
+            {
+              "fieldId": "level",
+              "fieldValue": "warn"
+            },
+            {
+              "fieldId": "event",
+              "fieldValue": "audio_transcription_failed"
+            },
+            {
+              "fieldId": "payload",
+              "fieldValue": "={{ { stt_status: $json.stt_status || 'error', stt_error: $json.stt_error || '', duration: $json.audio_duration || 0 } }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2672,
+        560
+      ],
+      "id": "3724c8c8-9ea6-4f53-a791-d4f2b2f14891",
+      "name": "Log audio transcription failed",
+      "continueOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = String($json.message || '').toLowerCase();\n// Conservative specialist routing; fallback to NONE for ambiguity\nconst ragRe = /(lmd|lei da memoria democratica|documento|documentacao|certidao|certidão|prazo legal|elegibilidade)/i;\nconst schedulingRe = /(agendar|marcar horario|marcar horário|agenda|consulta)/i;\nlet specialist_route = 'NONE';\nif (schedulingRe.test(text)) specialist_route = 'SCHEDULING_SPECIALIST';\nelse if (ragRe.test(text)) specialist_route = 'RAG_SPECIALIST';\nreturn [{ ...$json, specialist_route, handled_by: specialist_route === 'NONE' ? ($json.handled_by || 'llm') : specialist_route.toLowerCase() }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5824,
+        -64
+      ],
+      "id": "02024739-99dd-4e9a-a6a7-0c8988382d76",
+      "name": "Classify specialist route"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "8da82d3f-4d7c-4c99-a5c9-5cc35fce7f86",
+                    "leftValue": "={{ $json.specialist_route }}",
+                    "rightValue": "RAG_SPECIALIST",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "RAG_SPECIALIST"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "5d838cd6-f877-4c59-a336-84b97347f2a1",
+                    "leftValue": "={{ $json.specialist_route }}",
+                    "rightValue": "SCHEDULING_SPECIALIST",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "SCHEDULING_SPECIALIST"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        6032,
+        -64
+      ],
+      "id": "ba999170-f99d-4af0-9b95-a20eb59fe3f8",
+      "name": "Specialist route switch"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6b439364-6292-47ef-a2cf-597d2a55edc8",
+              "name": "handled_by",
+              "value": "rag_specialist",
+              "type": "string"
+            },
+            {
+              "id": "59595912-4282-466b-be93-5d9b2756c9cb",
+              "name": "specialist_route",
+              "value": "RAG_SPECIALIST",
+              "type": "string"
+            },
+            {
+              "id": "144119ec-a512-40a4-8050-2743ac7546e6",
+              "name": "rag_used",
+              "value": "false",
+              "type": "string"
+            },
+            {
+              "id": "b2f0f200-bd84-4d95-93d6-22e59cef0b08",
+              "name": "rag_fallback_reason",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "320e4397-6fd4-4523-83df-9629a11cf78e",
+              "name": "rag_query",
+              "value": "={{ $json.message }}",
+              "type": "string"
+            },
+            {
+              "id": "14058fe7-2d75-4156-88c1-a4459a11fb82",
+              "name": "rag_search_term",
+              "value": "={{ ($json.message || \"\").toLowerCase().split(/\\s+/).filter(w => w.length > 3).slice(0,4).join(\" \") || $json.message }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        6240,
+        -160
+      ],
+      "id": "c8f03c0f-84c6-4ef7-b6d1-8709466ee552",
+      "name": "RAG Prepare Query"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "conversation_state",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "org_id",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Normalize IDs\"].json.org_id }}"
+            },
+            {
+              "keyName": "channel_id",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Normalize IDs\"].json.channel_id }}"
+            },
+            {
+              "keyName": "phone",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Normalize IDs\"].json.phone }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "last_intent",
+              "fieldValue": "SCHEDULING_INTENT"
+            },
+            {
+              "fieldId": "state",
+              "fieldValue": "qualifying"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        6240,
+        -16
+      ],
+      "id": "73d304ef-0ca4-4ba0-be17-d860f33d8068",
+      "name": "Update state scheduling specialist",
+      "continueOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d7d56f32-44fa-4f1d-9fd4-902bc4bfdde7",
+              "name": "message",
+              "value": "Consigo te ajudar com agendamento 😊 Me diga o melhor dia e período (manhã/tarde/noite) para seguirmos.",
+              "type": "string"
+            },
+            {
+              "id": "6a92de53-15f7-4dc8-a5dd-2df60847a6de",
+              "name": "handled_by",
+              "value": "scheduling_specialist",
+              "type": "string"
+            },
+            {
+              "id": "e8271bc8-f3df-4d63-85ca-1f8a45d4571e",
+              "name": "specialist_route",
+              "value": "SCHEDULING_SPECIALIST",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        6448,
+        -16
+      ],
+      "id": "16519d4a-cf3f-4cee-aec6-9b41dbc8fdb0",
+      "name": "Scheduling Specialist Placeholder"
+    },
+    {
+      "parameters": {
+        "tableId": "workflow_events",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "trace_id",
+              "fieldValue": "={{ $execution.id }}"
+            },
+            {
+              "fieldId": "workflow_id",
+              "fieldValue": "t9C1Znq4CdUHmt0S"
+            },
+            {
+              "fieldId": "execution_id",
+              "fieldValue": "={{ $execution.id }}"
+            },
+            {
+              "fieldId": "node_name",
+              "fieldValue": "Specialist route switch"
+            },
+            {
+              "fieldId": "level",
+              "fieldValue": "info"
+            },
+            {
+              "fieldId": "event",
+              "fieldValue": "routed_specialist"
+            },
+            {
+              "fieldId": "payload",
+              "fieldValue": "={{ { specialist_route: $json.specialist_route || 'NONE', handled_by: $json.handled_by || 'llm', rag_used: $json.rag_used || false, rag_hits_count: $json.rag_hits_count || 0, rag_confidence: $json.rag_confidence || 0 } }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        6672,
+        -96
+      ],
+      "id": "a1faf8bb-41f6-4539-95cb-af731ec41c3c",
+      "name": "Log specialist routed",
+      "continueOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c6fbb4ab-f232-4f12-a621-01596f06eb9a",
+              "leftValue": "={{ $json.opt_out }}",
+              "rightValue": "={{ true }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4448,
+        -224
+      ],
+      "id": "1210d51a-e711-4739-bf26-0fbb44f9cfd4",
+      "name": "Opt-out ativo?"
+    },
+    {
+      "parameters": {
+        "tableId": "workflow_events",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "trace_id",
+              "fieldValue": "={{ $json.message_id || $execution.id }}"
+            },
+            {
+              "fieldId": "workflow_id",
+              "fieldValue": "={{ $workflow.id }}"
+            },
+            {
+              "fieldId": "execution_id",
+              "fieldValue": "={{ $execution.id }}"
+            },
+            {
+              "fieldId": "node_name",
+              "fieldValue": "Dados"
+            },
+            {
+              "fieldId": "level",
+              "fieldValue": "info"
+            },
+            {
+              "fieldId": "event",
+              "fieldValue": "inbound_received"
+            },
+            {
+              "fieldId": "payload",
+              "fieldValue": "={{ $json }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        320,
+        -180
+      ],
+      "id": "be555021-54b2-4ea0-8828-8f148aae426b",
+      "name": "Log inbound received",
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "workflow_events",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "trace_id",
+              "fieldValue": "={{ $node[\"Attach message context\"].json.trace_id || $execution.id }}"
+            },
+            {
+              "fieldId": "workflow_id",
+              "fieldValue": "={{ $workflow.id }}"
+            },
+            {
+              "fieldId": "execution_id",
+              "fieldValue": "={{ $execution.id }}"
+            },
+            {
+              "fieldId": "node_name",
+              "fieldValue": "Inbound duplicado?"
+            },
+            {
+              "fieldId": "level",
+              "fieldValue": "info"
+            },
+            {
+              "fieldId": "event",
+              "fieldValue": "dedup_blocked"
+            },
+            {
+              "fieldId": "payload",
+              "fieldValue": "={{ { message_id: $node[\"Attach message context\"].json.message_id, org_id: $node[\"Attach message context\"].json.org_id, channel_id: $node[\"Attach message context\"].json.channel_id } }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2480,
+        -320
+      ],
+      "id": "a9eb3928-4425-42dc-af94-6caa8c75d124",
+      "name": "Log dedup blocked",
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "workflow_events",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "trace_id",
+              "fieldValue": "={{ $json.trace_id || $execution.id }}"
+            },
+            {
+              "fieldId": "workflow_id",
+              "fieldValue": "={{ $workflow.id }}"
+            },
+            {
+              "fieldId": "execution_id",
+              "fieldValue": "={{ $execution.id }}"
+            },
+            {
+              "fieldId": "node_name",
+              "fieldValue": "AI Agent"
+            },
+            {
+              "fieldId": "level",
+              "fieldValue": "info"
+            },
+            {
+              "fieldId": "event",
+              "fieldValue": "llm_called"
+            },
+            {
+              "fieldId": "payload",
+              "fieldValue": "={{ { message: $json.message, detected_intent: $json.detected_intent, specialist_route: $json.specialist_route } }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2920,
+        140
+      ],
+      "id": "157e38af-5326-44e9-a569-380d109e522c",
+      "name": "Log llm called",
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "faead935-09d4-46d7-8294-b88ac785b633",
+              "name": "retry_attempt",
+              "value": "1",
+              "type": "string"
+            },
+            {
+              "id": "1392f94c-6be0-482a-bb60-255f2194e05d",
+              "name": "trace_id",
+              "value": "={{ $node[\"Normalize IDs\"].json.trace_id || $execution.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3330,
+        120
+      ],
+      "id": "885593b9-584a-466b-af29-e64dd60b020e",
+      "name": "Set retry attempt 1"
+    },
+    {
+      "parameters": {
+        "tableId": "workflow_events",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "trace_id",
+              "fieldValue": "={{ $json.trace_id || $execution.id }}"
+            },
+            {
+              "fieldId": "workflow_id",
+              "fieldValue": "={{ $workflow.id }}"
+            },
+            {
+              "fieldId": "execution_id",
+              "fieldValue": "={{ $execution.id }}"
+            },
+            {
+              "fieldId": "node_name",
+              "fieldValue": "HTTP Request"
+            },
+            {
+              "fieldId": "level",
+              "fieldValue": "info"
+            },
+            {
+              "fieldId": "event",
+              "fieldValue": "outbound_send_attempt"
+            },
+            {
+              "fieldId": "payload",
+              "fieldValue": "={{ { attempt: $json.retry_attempt, message: $json.message } }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        3500,
+        120
+      ],
+      "id": "1210941c-ad01-40a6-99fb-aaf7fc37bf63",
+      "name": "Log outbound attempt",
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "19739ee2-b027-472d-8486-4c5cba4bcb5b",
+              "leftValue": "={{ ($json.statusCode || 0) >= 200 && ($json.statusCode || 0) < 300 }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3820,
+        120
+      ],
+      "id": "d4ebbfe2-c3c6-49fd-a34a-aaf0b694094e",
+      "name": "Outbound success?"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bfba4afa-4ec6-46ec-a28a-523d95fd66b6",
+              "name": "outbound_status",
+              "value": "sent",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4010,
+        20
+      ],
+      "id": "7f80a66c-54b9-432a-995d-d394ad5c7e3d",
+      "name": "Set outbound sent"
+    },
+    {
+      "parameters": {
+        "tableId": "workflow_events",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "trace_id",
+              "fieldValue": "={{ $json.trace_id || $execution.id }}"
+            },
+            {
+              "fieldId": "workflow_id",
+              "fieldValue": "={{ $workflow.id }}"
+            },
+            {
+              "fieldId": "execution_id",
+              "fieldValue": "={{ $execution.id }}"
+            },
+            {
+              "fieldId": "node_name",
+              "fieldValue": "HTTP Request"
+            },
+            {
+              "fieldId": "level",
+              "fieldValue": "info"
+            },
+            {
+              "fieldId": "event",
+              "fieldValue": "outbound_send_success"
+            },
+            {
+              "fieldId": "payload",
+              "fieldValue": "={{ { statusCode: $json.statusCode, attempt: $json.retry_attempt } }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        4200,
+        20
+      ],
+      "id": "78836a80-63b1-41a8-9b1f-7251fa6df339",
+      "name": "Log outbound success",
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4000,
+        220
+      ],
+      "id": "83be00a4-fd6a-42e6-bd9a-cdc4beccce17",
+      "name": "Wait retry 10s"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9ab32300-3bfd-45e3-a9b9-27bb187ee224",
+              "name": "retry_attempt",
+              "value": "2",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4180,
+        220
+      ],
+      "id": "b6401f5d-b430-4c9a-acd3-71cdf590ebab",
+      "name": "Set retry attempt 2"
+    },
+    {
+      "parameters": {
+        "tableId": "workflow_events",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "trace_id",
+              "fieldValue": "={{ $json.trace_id || $execution.id }}"
+            },
+            {
+              "fieldId": "workflow_id",
+              "fieldValue": "={{ $workflow.id }}"
+            },
+            {
+              "fieldId": "execution_id",
+              "fieldValue": "={{ $execution.id }}"
+            },
+            {
+              "fieldId": "node_name",
+              "fieldValue": "HTTP Request"
+            },
+            {
+              "fieldId": "level",
+              "fieldValue": "info"
+            },
+            {
+              "fieldId": "event",
+              "fieldValue": "outbound_send_attempt"
+            },
+            {
+              "fieldId": "payload",
+              "fieldValue": "={{ { attempt: $json.retry_attempt, message: $json.message } }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        4350,
+        220
+      ],
+      "id": "fd9d0e92-fc9b-4ab1-b1c7-18bca23bb592",
+      "name": "Log outbound attempt 2",
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Dados').item.json.server_url }}/message/sendText/{{ $('Dados').item.json.instance }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $('Dados').item.json.apikey }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('Dados').item.json.remoteJid }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.message }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        4520,
+        220
+      ],
+      "id": "1d279eec-6b4a-46e3-b8ac-bdc7e63497c1",
+      "name": "HTTP Request retry 2",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "19739ee2-b027-472d-8486-4c5cba4bcb5b",
+              "leftValue": "={{ ($json.statusCode || 0) >= 200 && ($json.statusCode || 0) < 300 }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4700,
+        220
+      ],
+      "id": "578b52e3-758a-48ee-8b20-6c65c0e686bb",
+      "name": "Outbound success retry 2?"
+    },
+    {
+      "parameters": {
+        "amount": 30
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4880,
+        330
+      ],
+      "id": "5a6a82fe-529b-48cc-8069-be523dbf5464",
+      "name": "Wait retry 30s"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7d97bd11-c909-43af-80f4-e66e06c7fbbc",
+              "name": "retry_attempt",
+              "value": "3",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        5050,
+        330
+      ],
+      "id": "6adbfe4b-845b-4ff6-9814-eeef7486feb6",
+      "name": "Set retry attempt 3"
+    },
+    {
+      "parameters": {
+        "tableId": "workflow_events",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "trace_id",
+              "fieldValue": "={{ $json.trace_id || $execution.id }}"
+            },
+            {
+              "fieldId": "workflow_id",
+              "fieldValue": "={{ $workflow.id }}"
+            },
+            {
+              "fieldId": "execution_id",
+              "fieldValue": "={{ $execution.id }}"
+            },
+            {
+              "fieldId": "node_name",
+              "fieldValue": "HTTP Request"
+            },
+            {
+              "fieldId": "level",
+              "fieldValue": "info"
+            },
+            {
+              "fieldId": "event",
+              "fieldValue": "outbound_send_attempt"
+            },
+            {
+              "fieldId": "payload",
+              "fieldValue": "={{ { attempt: $json.retry_attempt, message: $json.message } }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        5220,
+        330
+      ],
+      "id": "de4bf1b7-4ef7-4238-a2c3-b61f603258b6",
+      "name": "Log outbound attempt 3",
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Dados').item.json.server_url }}/message/sendText/{{ $('Dados').item.json.instance }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $('Dados').item.json.apikey }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('Dados').item.json.remoteJid }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.message }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        5400,
+        330
+      ],
+      "id": "5950d095-d057-4c58-90a5-1b035a22813a",
+      "name": "HTTP Request retry 3",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "19739ee2-b027-472d-8486-4c5cba4bcb5b",
+              "leftValue": "={{ ($json.statusCode || 0) >= 200 && ($json.statusCode || 0) < 300 }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        5580,
+        330
+      ],
+      "id": "9f41a12b-d8a4-49c8-bfbf-cf9fdb0bb5f0",
+      "name": "Outbound success retry 3?"
+    },
+    {
+      "parameters": {
+        "tableId": "workflow_events",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "trace_id",
+              "fieldValue": "={{ $json.trace_id || $execution.id }}"
+            },
+            {
+              "fieldId": "workflow_id",
+              "fieldValue": "={{ $workflow.id }}"
+            },
+            {
+              "fieldId": "execution_id",
+              "fieldValue": "={{ $execution.id }}"
+            },
+            {
+              "fieldId": "node_name",
+              "fieldValue": "HTTP Request"
+            },
+            {
+              "fieldId": "level",
+              "fieldValue": "error"
+            },
+            {
+              "fieldId": "event",
+              "fieldValue": "outbound_send_failed"
+            },
+            {
+              "fieldId": "payload",
+              "fieldValue": "={{ { statusCode: $json.statusCode || null, attempt: $json.retry_attempt || 3, error: $json.error || $json.body || null } }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        5760,
+        420
+      ],
+      "id": "e3bf9a4c-e201-41b6-8ed9-a6e04f334132",
+      "name": "Log outbound failed",
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0d767fc3-810b-46f5-8a24-cbceab7465e9",
+              "name": "outbound_status",
+              "value": "failed",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        5940,
+        420
+      ],
+      "id": "b37a0fda-f207-4ff6-89b7-7c3192d74a23",
+      "name": "Set outbound failed"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "785cf588-1fff-46ad-be0d-8d84a1f3c673",
+              "leftValue": "={{ $json.outbound_status }}",
+              "rightValue": "sent",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        6440,
+        260
+      ],
+      "id": "925272a2-2c3a-4e5c-953f-380df62a4709",
+      "name": "Outbound sent?"
+    },
+    {
+      "parameters": {
+        "tableId": "workflow_events",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "trace_id",
+              "fieldValue": "={{ $json.trace_id || $execution.id }}"
+            },
+            {
+              "fieldId": "workflow_id",
+              "fieldValue": "={{ $workflow.id }}"
+            },
+            {
+              "fieldId": "execution_id",
+              "fieldValue": "={{ $execution.id }}"
+            },
+            {
+              "fieldId": "node_name",
+              "fieldValue": "RAG Prepare Query"
+            },
+            {
+              "fieldId": "level",
+              "fieldValue": "info"
+            },
+            {
+              "fieldId": "event",
+              "fieldValue": "rag_query_started"
+            },
+            {
+              "fieldId": "payload",
+              "fieldValue": "={{ { query: $json.rag_query, specialist_route: $json.specialist_route } }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        6420,
+        -260
+      ],
+      "id": "d13f1def-92aa-4714-9fde-2d956bc697ae",
+      "name": "Log rag query started",
+      "continueOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "knowledge_chunks",
+        "limit": 5,
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "org_id",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Normalize IDs\"].json.org_id }}"
+            },
+            {
+              "keyName": "is_active",
+              "condition": "eq",
+              "keyValue": "true"
+            },
+            {
+              "keyName": "content_text",
+              "condition": "ilike",
+              "keyValue": "={{ \"%\" + $json.rag_search_term + \"%\" }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        6630,
+        -260
+      ],
+      "id": "73ff6049-ec72-4110-a416-4adb72e9a7f9",
+      "name": "RAG Retrieve Chunks",
+      "alwaysOutputData": true,
+      "continueOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all().map(i => i.json).filter(j => j && j.content_text);\nconst hitCount = items.length;\nconst contextText = items.map((h, idx) => `[#${idx+1}] ${h.content_text}`).join('\\n\\n');\nconst confidence = hitCount >= 3 ? 0.9 : hitCount === 2 ? 0.75 : hitCount === 1 ? 0.55 : 0.0;\nconst base = { ...($json || {}) };\nreturn [{ ...base, rag_hits_count: hitCount, rag_confidence: confidence, rag_context: contextText, rag_used: hitCount > 0, handled_by: 'rag_specialist' }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6840,
+        -260
+      ],
+      "id": "cbe0a9f1-2f46-4eda-be1f-8c7d6089c8b4",
+      "name": "RAG Build Context"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d42926a6-dd75-402a-bd43-009eaa437fc3",
+              "leftValue": "={{ ($json.rag_hits_count || 0) > 0 }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        7040,
+        -260
+      ],
+      "id": "f929d2a5-9169-40fa-81a9-6133843ad195",
+      "name": "RAG has hits?"
+    },
+    {
+      "parameters": {
+        "tableId": "workflow_events",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "trace_id",
+              "fieldValue": "={{ $json.trace_id || $execution.id }}"
+            },
+            {
+              "fieldId": "workflow_id",
+              "fieldValue": "={{ $workflow.id }}"
+            },
+            {
+              "fieldId": "execution_id",
+              "fieldValue": "={{ $execution.id }}"
+            },
+            {
+              "fieldId": "node_name",
+              "fieldValue": "RAG Retrieve Chunks"
+            },
+            {
+              "fieldId": "level",
+              "fieldValue": "info"
+            },
+            {
+              "fieldId": "event",
+              "fieldValue": "rag_query_hits"
+            },
+            {
+              "fieldId": "payload",
+              "fieldValue": "={{ { rag_hits_count: $json.rag_hits_count, rag_confidence: $json.rag_confidence } }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        7240,
+        -360
+      ],
+      "id": "fc3c84b6-34b2-44c9-8412-c4c69dd7f44e",
+      "name": "Log rag query hits",
+      "continueOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.OPENAI_API_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { model: \"gpt-4o-mini\", temperature: 0.1, messages: [ { role: \"system\", content: \"Você é especialista RAG da ESAI. Responda SOMENTE com base no CONTEXTO. Se o contexto for insuficiente, diga explicitamente que não há base suficiente e recomende consultor. Não invente fatos.\" }, { role: \"user\", content: `PERGUNTA: ${$json.rag_query}\n\nCONTEXTO:\n${$json.rag_context}` } ] } }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        7440,
+        -360
+      ],
+      "id": "72bd2eda-871c-40c0-9518-825b3ee1a7d3",
+      "name": "RAG Generate Grounded Response",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0aa84a19-693c-4a04-8f26-a0deefbf0a23",
+              "name": "message",
+              "value": "={{ $json.body?.choices?.[0]?.message?.content || \"Quero te responder com precisão. Não encontrei informação suficiente na base para afirmar isso agora. Posso te encaminhar para um consultor da equipe 😊\" }}",
+              "type": "string"
+            },
+            {
+              "id": "6855b9d8-12e3-46ee-9c91-52b1055e0e2e",
+              "name": "handled_by",
+              "value": "rag_specialist",
+              "type": "string"
+            },
+            {
+              "id": "d168b2db-3c96-4206-8e9d-235e241fb8b7",
+              "name": "rag_used",
+              "value": "true",
+              "type": "string"
+            },
+            {
+              "id": "e13a97be-c87b-4b26-8390-c05364a2f011",
+              "name": "rag_fallback_reason",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        7640,
+        -360
+      ],
+      "id": "425d32cd-445d-492f-9cba-590b3bc8ca42",
+      "name": "Set RAG Response"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "conversation_state",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "org_id",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Normalize IDs\"].json.org_id }}"
+            },
+            {
+              "keyName": "channel_id",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Normalize IDs\"].json.channel_id }}"
+            },
+            {
+              "keyName": "phone",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Normalize IDs\"].json.phone }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "last_intent",
+              "fieldValue": "RAG_QUERY"
+            },
+            {
+              "fieldId": "last_topic",
+              "fieldValue": "={{ $node[\"RAG Prepare Query\"].json.rag_search_term || \"general\" }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        7840,
+        -360
+      ],
+      "id": "7d3c9392-1055-4a4f-a3d1-c8acf8b4ac7b",
+      "name": "Update state rag topic",
+      "continueOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "workflow_events",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "trace_id",
+              "fieldValue": "={{ $json.trace_id || $execution.id }}"
+            },
+            {
+              "fieldId": "workflow_id",
+              "fieldValue": "={{ $workflow.id }}"
+            },
+            {
+              "fieldId": "execution_id",
+              "fieldValue": "={{ $execution.id }}"
+            },
+            {
+              "fieldId": "node_name",
+              "fieldValue": "RAG Generate Grounded Response"
+            },
+            {
+              "fieldId": "level",
+              "fieldValue": "info"
+            },
+            {
+              "fieldId": "event",
+              "fieldValue": "rag_response_generated"
+            },
+            {
+              "fieldId": "payload",
+              "fieldValue": "={{ { rag_hits_count: $json.rag_hits_count, rag_confidence: $json.rag_confidence } }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        8040,
+        -360
+      ],
+      "id": "7760b4f1-a53f-4261-99dc-8db64a4f0616",
+      "name": "Log rag response generated",
+      "continueOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "workflow_events",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "trace_id",
+              "fieldValue": "={{ $json.trace_id || $execution.id }}"
+            },
+            {
+              "fieldId": "workflow_id",
+              "fieldValue": "={{ $workflow.id }}"
+            },
+            {
+              "fieldId": "execution_id",
+              "fieldValue": "={{ $execution.id }}"
+            },
+            {
+              "fieldId": "node_name",
+              "fieldValue": "RAG Retrieve Chunks"
+            },
+            {
+              "fieldId": "level",
+              "fieldValue": "warn"
+            },
+            {
+              "fieldId": "event",
+              "fieldValue": "rag_query_no_hits"
+            },
+            {
+              "fieldId": "payload",
+              "fieldValue": "={{ { rag_query: $json.rag_query, rag_search_term: $json.rag_search_term } }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        7240,
+        -180
+      ],
+      "id": "216c35ce-02b6-40e7-9a07-4053d42923de",
+      "name": "Log rag query no hits",
+      "continueOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a7e0c1ae-9635-4767-af0c-7d485718720c",
+              "name": "rag_used",
+              "value": "false",
+              "type": "string"
+            },
+            {
+              "id": "77a81f96-1624-4f67-904a-45baad8159c2",
+              "name": "rag_fallback_reason",
+              "value": "no_hits",
+              "type": "string"
+            },
+            {
+              "id": "0b9f78fb-da41-43cb-b2cc-b8f7ac052b40",
+              "name": "message",
+              "value": "={{ $node[\"RAG Prepare Query\"].json.message }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        7440,
+        -180
+      ],
+      "id": "bb840b65-eef0-49f1-934b-c86655f69020",
+      "name": "Set RAG Fallback to AI"
+    },
+    {
+      "parameters": {
+        "tableId": "workflow_events",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "trace_id",
+              "fieldValue": "={{ $json.trace_id || $execution.id }}"
+            },
+            {
+              "fieldId": "workflow_id",
+              "fieldValue": "={{ $workflow.id }}"
+            },
+            {
+              "fieldId": "execution_id",
+              "fieldValue": "={{ $execution.id }}"
+            },
+            {
+              "fieldId": "node_name",
+              "fieldValue": "RAG Specialist"
+            },
+            {
+              "fieldId": "level",
+              "fieldValue": "info"
+            },
+            {
+              "fieldId": "event",
+              "fieldValue": "rag_fallback_to_ai_agent"
+            },
+            {
+              "fieldId": "payload",
+              "fieldValue": "={{ { rag_fallback_reason: $json.rag_fallback_reason, rag_hits_count: $json.rag_hits_count || 0 } }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        7640,
+        -180
+      ],
+      "id": "e94f1e2a-73a8-460c-8b72-0094868b5d29",
+      "name": "Log rag fallback to ai agent",
+      "continueOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "approved_responses",
+        "limit": 1,
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "org_id",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Normalize IDs\"].json.org_id }}"
+            },
+            {
+              "keyName": "intent_key",
+              "condition": "eq",
+              "keyValue": "={{ $json.detected_intent || \"UNKNOWN\" }}"
+            },
+            {
+              "keyName": "is_active",
+              "condition": "eq",
+              "keyValue": "true"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        5200,
+        -64
+      ],
+      "id": "fb14aa54-728c-48fb-b97a-a1ab90a1c29c",
+      "name": "Lookup approved response",
+      "alwaysOutputData": true,
+      "continueOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d409754f-b27e-42c3-8f3e-8e77b75bc0f7",
+              "leftValue": "={{ $json.id }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        5400,
+        -64
+      ],
+      "id": "4a2c53cc-f414-405f-be1a-ac01f0c861f8",
+      "name": "Approved response found?"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "caea2eb7-3fee-4519-bf54-ceae29bb1300",
+              "name": "message",
+              "value": "={{ $json.message_template }}",
+              "type": "string"
+            },
+            {
+              "id": "a733406a-8e43-4d73-8b02-e19684687aaa",
+              "name": "handled_by",
+              "value": "approved_response_library",
+              "type": "string"
+            },
+            {
+              "id": "ef9bae8c-bdf1-4a18-bfbe-3d82162cafa9",
+              "name": "approved_intent",
+              "value": "={{ $json.intent_key }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        5600,
+        -160
+      ],
+      "id": "855b5650-b8e3-4dce-988e-4f6e79d68edb",
+      "name": "Apply approved response"
+    },
+    {
+      "parameters": {
+        "jsCode": "const text=String($json.message||'').toLowerCase();\nlet score=10;\nconst reasons=[];\nif ((String($json.detected_intent||'')==='PRICING_INTEREST') || /preco|preço|valor|quanto custa|contratar/.test(text)){score+=35;reasons.push('pricing_interest');}\nif (/urgente|hoje|agora|prioridade/.test(text)){score+=20;reasons.push('urgency');}\nif (String($json.detected_intent||'')==='HUMAN_HANDOFF'){score+=15;reasons.push('handoff_request');}\nif ((Number($json.rag_hits_count||0))>0){score+=10;reasons.push('qualified_question');}\nif ((Number($json.followup_stage||0))>=1){score+=5;reasons.push('engaged_followup');}\nif (score>100) score=100;\nconst temp=score>=70?'hot':score>=40?'warm':'cold';\nconst priority=score>=70?'p1':score>=40?'p2':'p3';\nreturn [{...$json,lead_score:score,lead_temperature:temp,priority_level:priority,lead_score_reasons:reasons}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3180,
+        420
+      ],
+      "id": "0cf1f72a-d8c2-421a-9513-d28aa1b18e12",
+      "name": "Lead scoring"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "conversation_state",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "org_id",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Normalize IDs\"].json.org_id }}"
+            },
+            {
+              "keyName": "channel_id",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Normalize IDs\"].json.channel_id }}"
+            },
+            {
+              "keyName": "phone",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Normalize IDs\"].json.phone }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "lead_score",
+              "fieldValue": "={{ $json.lead_score }}"
+            },
+            {
+              "fieldId": "lead_temperature",
+              "fieldValue": "={{ $json.lead_temperature }}"
+            },
+            {
+              "fieldId": "priority_level",
+              "fieldValue": "={{ $json.priority_level }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        3380,
+        420
+      ],
+      "id": "4a39256f-c177-4b46-8509-002eb6165e8b",
+      "name": "Update lead scoring state",
+      "continueOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "workflow_events",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "trace_id",
+              "fieldValue": "={{ $json.trace_id || $execution.id }}"
+            },
+            {
+              "fieldId": "workflow_id",
+              "fieldValue": "={{ $workflow.id }}"
+            },
+            {
+              "fieldId": "execution_id",
+              "fieldValue": "={{ $execution.id }}"
+            },
+            {
+              "fieldId": "node_name",
+              "fieldValue": "Lead scoring"
+            },
+            {
+              "fieldId": "level",
+              "fieldValue": "info"
+            },
+            {
+              "fieldId": "event",
+              "fieldValue": "lead_scored"
+            },
+            {
+              "fieldId": "payload",
+              "fieldValue": "={{ { lead_score: $json.lead_score, lead_temperature: $json.lead_temperature, priority_level: $json.priority_level, reasons: $json.lead_score_reasons } }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        3580,
+        420
+      ],
+      "id": "f6c224b9-7938-486e-84cd-fe4b69fbf0d7",
+      "name": "Log lead scored",
+      "continueOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "conversation_state",
+        "limit": 1,
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "org_id",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Normalize IDs\"].json.org_id }}"
+            },
+            {
+              "keyName": "channel_id",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Normalize IDs\"].json.channel_id }}"
+            },
+            {
+              "keyName": "phone",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Normalize IDs\"].json.phone }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        3780,
+        420
+      ],
+      "id": "1e915cb9-c0d5-41ef-b13c-f19cf0ba073b",
+      "name": "Get state pre-send",
+      "alwaysOutputData": true,
+      "continueOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "suppression_list",
+        "limit": 1,
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "org_id",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Normalize IDs\"].json.org_id }}"
+            },
+            {
+              "keyName": "phone",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Normalize IDs\"].json.phone }}"
+            },
+            {
+              "keyName": "is_active",
+              "condition": "eq",
+              "keyValue": "true"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        3980,
+        420
+      ],
+      "id": "be4b125c-0260-448a-95cc-a82c5f825a68",
+      "name": "Check suppression list",
+      "alwaysOutputData": true,
+      "continueOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "messages",
+        "limit": 5,
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "org_id",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Normalize IDs\"].json.org_id }}"
+            },
+            {
+              "keyName": "channel_id",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Normalize IDs\"].json.channel_id }}"
+            },
+            {
+              "keyName": "phone",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Normalize IDs\"].json.phone }}"
+            },
+            {
+              "keyName": "direction",
+              "condition": "eq",
+              "keyValue": "outbound"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        4180,
+        420
+      ],
+      "id": "b8732fdf-d32c-4ce8-8302-11f7a9f4a4de",
+      "name": "Get recent outbound count",
+      "alwaysOutputData": true,
+      "continueOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "workflow_events",
+        "limit": 5,
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "event",
+              "condition": "eq",
+              "keyValue": "outbound_send_failed"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        4380,
+        420
+      ],
+      "id": "5af5d9f6-9be5-4fd3-a176-80ff3e8e9301",
+      "name": "Get recent provider failures",
+      "alwaysOutputData": true,
+      "continueOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const msg=String($json.message||'');\nconst rules=[];\nlet fail=false;\nif(!msg.trim()){fail=true;rules.push('empty_message');}\nif(msg.length>800){fail=true;rules.push('message_too_long');}\nif(msg.includes('{{')||msg.includes('undefined')||msg.includes('[object Object]')){fail=true;rules.push('broken_placeholder');}\nif(/garantimos|garantia de resultado|atalho legal|jeitinho/.test(msg.toLowerCase())){fail=true;rules.push('forbidden_promise');}\nconst st=$node['Get state pre-send'].json||{};\nif(st.opt_out===true||String(st.opt_out)==='true'){fail=true;rules.push('opt_out_block');}\nconst sup=$node['Check suppression list'].json||{};\nif(sup.id){fail=true;rules.push('suppression_block');}\nconst outboundCount=$items('Get recent outbound count').length;\nif(outboundCount>=5){fail=true;rules.push('rate_limit_block');}\nconst recentFailures=$items('Get recent provider failures').length;\nif(recentFailures>=4){fail=true;rules.push('circuit_breaker_open');}\nreturn [{...$json,qa_status: fail?'fail':'pass',qa_fail_reason: rules[0]||'',qa_rules_triggered:rules,qa_message_limit:800}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4580,
+        420
+      ],
+      "id": "bc27b400-62b9-44bd-83bd-ed223e1bd04e",
+      "name": "Pre-send QA Guardrails"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "86cff824-52cf-4625-8ef4-7130f9ac3182",
+              "leftValue": "={{ $json.qa_status }}",
+              "rightValue": "pass",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4780,
+        420
+      ],
+      "id": "7876d3f6-34a0-48cf-996a-8864974a020b",
+      "name": "QA passed?"
+    },
+    {
+      "parameters": {
+        "tableId": "workflow_events",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "trace_id",
+              "fieldValue": "={{ $json.trace_id || $execution.id }}"
+            },
+            {
+              "fieldId": "workflow_id",
+              "fieldValue": "={{ $workflow.id }}"
+            },
+            {
+              "fieldId": "execution_id",
+              "fieldValue": "={{ $execution.id }}"
+            },
+            {
+              "fieldId": "node_name",
+              "fieldValue": "Pre-send QA Guardrails"
+            },
+            {
+              "fieldId": "level",
+              "fieldValue": "warn"
+            },
+            {
+              "fieldId": "event",
+              "fieldValue": "={{ $json.qa_fail_reason === \"rate_limit_block\" ? \"guardrail_rate_limit_block\" : $json.qa_fail_reason === \"opt_out_block\" ? \"guardrail_opt_out_block\" : $json.qa_fail_reason === \"circuit_breaker_open\" ? \"guardrail_circuit_breaker_open\" : \"guardrail_policy_block\" }}"
+            },
+            {
+              "fieldId": "payload",
+              "fieldValue": "={{ { qa_status: $json.qa_status, qa_fail_reason: $json.qa_fail_reason, qa_rules_triggered: $json.qa_rules_triggered } }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        4980,
+        500
+      ],
+      "id": "9a49bcd8-7938-40ff-9b12-edebcddee2ac",
+      "name": "Log QA guardrail block",
+      "continueOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3685b908-53bc-463d-9d71-a06ca19ace22",
+              "name": "message",
+              "value": "Quero te atender com segurança. Vou encaminhar seu caso para um consultor da equipe 😊",
+              "type": "string"
+            },
+            {
+              "id": "cf853f21-0216-4135-96dd-284ef5567b08",
+              "name": "qa_status",
+              "value": "fail",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        5180,
+        500
+      ],
+      "id": "71e8067c-6463-4fcf-b0c4-6c7fa936c087",
+      "name": "Set QA safe fallback"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dados": {
+      "main": [
+        [
+          {
+            "node": "Log inbound received",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "é minha mensagem?": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "tipo de mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "tipo de mensagem": {
+      "main": [
+        [
+          {
+            "node": "Message Conversation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Message Ephemeral",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Message ExtendedMessage",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Message Audio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Message Image",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Message Figurinhas",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Message Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message Conversation": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message Ephemeral": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Message ExtendedMessage": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Normalize IDs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "mensagem do agente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message Audio": {
+      "main": [
+        [
+          {
+            "node": "Extract Audio Metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message Image": {
+      "main": [
+        [
+          {
+            "node": "mensagem final",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Message Figurinhas": {
+      "main": [
+        [
+          {
+            "node": "mensagem final",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Message Video": {
+      "main": [
+        [
+          {
+            "node": "mensagem final",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "mensagem do agente": {
+      "main": [
+        [
+          {
+            "node": "mensagem final",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "mensagem final": {
+      "main": [
+        [
+          {
+            "node": "Lead scoring",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Outbound success?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize IDs": {
+      "main": [
+        [
+          {
+            "node": "Get many rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many rows": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Attach message context",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a row": {
+      "main": [
+        [
+          {
+            "node": "Attach message context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attach message context": {
+      "main": [
+        [
+          {
+            "node": "Check inbound duplicate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check inbound duplicate": {
+      "main": [
+        [
+          {
+            "node": "Inbound duplicado?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Inbound duplicado?": {
+      "main": [
+        [
+          {
+            "node": "Log dedup blocked",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create inbound message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create inbound message": {
+      "main": [
+        [
+          {
+            "node": "Get conversation state",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get conversation state": {
+      "main": [
+        [
+          {
+            "node": "State read error?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "State read error?": {
+      "main": [
+        [
+          {
+            "node": "Log state read error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Normalize conversation state",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log state read error": {
+      "main": [
+        [
+          {
+            "node": "Normalize conversation state",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize conversation state": {
+      "main": [
+        [
+          {
+            "node": "State exists?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "IA pausada/handoff aberto?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "State exists?": {
+      "main": [
+        [
+          {
+            "node": "Update conversation state inbound",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create conversation state inbound",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IA pausada/handoff aberto?": {
+      "main": [
+        [
+          {
+            "node": "Message Handoff",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Opt-out ativo?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message Handoff": {
+      "main": [
+        [
+          {
+            "node": "mensagem final",
+            "type": "main",
+            "index": 5
+          }
+        ]
+      ]
+    },
+    "Create outbound message": {
+      "main": [
+        [
+          {
+            "node": "Outbound sent?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify deterministic intent": {
+      "main": [
+        [
+          {
+            "node": "Update state last_intent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update state last_intent": {
+      "main": [
+        [
+          {
+            "node": "Lookup approved response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deterministic intent switch": {
+      "main": [
+        [
+          {
+            "node": "Update state handoff",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update state opt-out",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Message Greeting",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Message Pricing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Message Status",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update state scheduling specialist",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Classify specialist route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update state handoff": {
+      "main": [
+        [
+          {
+            "node": "Message Human Handoff Deterministic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update state opt-out": {
+      "main": [
+        [
+          {
+            "node": "Message Opt-out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message Human Handoff Deterministic": {
+      "main": [
+        [
+          {
+            "node": "Log specialist routed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message Opt-out": {
+      "main": [
+        [
+          {
+            "node": "Log specialist routed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message Greeting": {
+      "main": [
+        [
+          {
+            "node": "Log specialist routed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message Pricing": {
+      "main": [
+        [
+          {
+            "node": "Log specialist routed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message Status": {
+      "main": [
+        [
+          {
+            "node": "Log specialist routed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message Scheduling": {
+      "main": [
+        [
+          {
+            "node": "Log specialist routed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log deterministic handled": {
+      "main": [
+        [
+          {
+            "node": "mensagem final",
+            "type": "main",
+            "index": 6
+          }
+        ]
+      ]
+    },
+    "Message from Audio STT": {
+      "main": [
+        [
+          {
+            "node": "Log audio transcribed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log audio transcribed": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Extract Audio Metadata": {
+      "main": [
+        [
+          {
+            "node": "Log audio received",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log audio received": {
+      "main": [
+        [
+          {
+            "node": "Audio muito longo?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Audio muito longo?": {
+      "main": [
+        [
+          {
+            "node": "Message Audio Too Long",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Download Audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Audio": {
+      "main": [
+        [
+          {
+            "node": "Transcribe Audio (STT)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe Audio (STT)": {
+      "main": [
+        [
+          {
+            "node": "STT sucesso?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "STT sucesso?": {
+      "main": [
+        [
+          {
+            "node": "Message from Audio STT",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Message Audio STT Fallback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message Audio Too Long": {
+      "main": [
+        [
+          {
+            "node": "Log audio transcription failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message Audio STT Fallback": {
+      "main": [
+        [
+          {
+            "node": "Log audio transcription failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log audio transcription failed": {
+      "main": [
+        [
+          {
+            "node": "mensagem final",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Opt-out ativo?": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Classify deterministic intent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify specialist route": {
+      "main": [
+        [
+          {
+            "node": "Specialist route switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Specialist route switch": {
+      "main": [
+        [
+          {
+            "node": "RAG Prepare Query",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update state scheduling specialist",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log llm called",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update state scheduling specialist": {
+      "main": [
+        [
+          {
+            "node": "Scheduling Specialist Placeholder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RAG Specialist Placeholder": {
+      "main": [
+        [
+          {
+            "node": "Log specialist routed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scheduling Specialist Placeholder": {
+      "main": [
+        [
+          {
+            "node": "Log specialist routed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log specialist routed": {
+      "main": [
+        [
+          {
+            "node": "Log deterministic handled",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log inbound received": {
+      "main": [
+        [
+          {
+            "node": "é minha mensagem?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log dedup blocked": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log llm called": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set retry attempt 1": {
+      "main": [
+        [
+          {
+            "node": "Log outbound attempt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log outbound attempt": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Outbound success?": {
+      "main": [
+        [
+          {
+            "node": "Set outbound sent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait retry 10s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set outbound sent": {
+      "main": [
+        [
+          {
+            "node": "Log outbound success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log outbound success": {
+      "main": [
+        [
+          {
+            "node": "Create outbound message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait retry 10s": {
+      "main": [
+        [
+          {
+            "node": "Set retry attempt 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set retry attempt 2": {
+      "main": [
+        [
+          {
+            "node": "Log outbound attempt 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log outbound attempt 2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request retry 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request retry 2": {
+      "main": [
+        [
+          {
+            "node": "Outbound success retry 2?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Outbound success retry 2?": {
+      "main": [
+        [
+          {
+            "node": "Set outbound sent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait retry 30s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait retry 30s": {
+      "main": [
+        [
+          {
+            "node": "Set retry attempt 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set retry attempt 3": {
+      "main": [
+        [
+          {
+            "node": "Log outbound attempt 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log outbound attempt 3": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request retry 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request retry 3": {
+      "main": [
+        [
+          {
+            "node": "Outbound success retry 3?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Outbound success retry 3?": {
+      "main": [
+        [
+          {
+            "node": "Set outbound sent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log outbound failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log outbound failed": {
+      "main": [
+        [
+          {
+            "node": "Set outbound failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set outbound failed": {
+      "main": [
+        [
+          {
+            "node": "Create outbound message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Outbound sent?": {
+      "main": [
+        [
+          {
+            "node": "Update conversation state outbound",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RAG Prepare Query": {
+      "main": [
+        [
+          {
+            "node": "Log rag query started",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log rag query started": {
+      "main": [
+        [
+          {
+            "node": "RAG Retrieve Chunks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RAG Retrieve Chunks": {
+      "main": [
+        [
+          {
+            "node": "RAG Build Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RAG Build Context": {
+      "main": [
+        [
+          {
+            "node": "RAG has hits?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RAG has hits?": {
+      "main": [
+        [
+          {
+            "node": "Log rag query hits",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log rag query no hits",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log rag query hits": {
+      "main": [
+        [
+          {
+            "node": "RAG Generate Grounded Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RAG Generate Grounded Response": {
+      "main": [
+        [
+          {
+            "node": "Set RAG Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set RAG Response": {
+      "main": [
+        [
+          {
+            "node": "Update state rag topic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update state rag topic": {
+      "main": [
+        [
+          {
+            "node": "Log rag response generated",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log rag response generated": {
+      "main": [
+        [
+          {
+            "node": "Log specialist routed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log rag query no hits": {
+      "main": [
+        [
+          {
+            "node": "Set RAG Fallback to AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set RAG Fallback to AI": {
+      "main": [
+        [
+          {
+            "node": "Log rag fallback to ai agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log rag fallback to ai agent": {
+      "main": [
+        [
+          {
+            "node": "Log llm called",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lookup approved response": {
+      "main": [
+        [
+          {
+            "node": "Approved response found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approved response found?": {
+      "main": [
+        [
+          {
+            "node": "Apply approved response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Deterministic intent switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apply approved response": {
+      "main": [
+        [
+          {
+            "node": "Log specialist routed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lead scoring": {
+      "main": [
+        [
+          {
+            "node": "Update lead scoring state",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update lead scoring state": {
+      "main": [
+        [
+          {
+            "node": "Log lead scored",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log lead scored": {
+      "main": [
+        [
+          {
+            "node": "Get state pre-send",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get state pre-send": {
+      "main": [
+        [
+          {
+            "node": "Check suppression list",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check suppression list": {
+      "main": [
+        [
+          {
+            "node": "Get recent outbound count",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get recent outbound count": {
+      "main": [
+        [
+          {
+            "node": "Get recent provider failures",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get recent provider failures": {
+      "main": [
+        [
+          {
+            "node": "Pre-send QA Guardrails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pre-send QA Guardrails": {
+      "main": [
+        [
+          {
+            "node": "QA passed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "QA passed?": {
+      "main": [
+        [
+          {
+            "node": "Set retry attempt 1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log QA guardrail block",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log QA guardrail block": {
+      "main": [
+        [
+          {
+            "node": "Set QA safe fallback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set QA safe fallback": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "03084af9-4e90-4f8f-9e35-652a64928c5d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9d74f9a6e2c13dd7db83fd676c96764bab0704f1ef7297916b99d877fb461376"
+  },
+  "id": "t9C1Znq4CdUHmt0S",
+  "tags": []
+}
