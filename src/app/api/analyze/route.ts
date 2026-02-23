@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
-import { callLLM, parseLLMJson } from "@/lib/llm";
+import { callLLMJson } from "@/lib/llm";
 import {
   ANALYSIS_SYSTEM_PROMPT,
   buildAnalysisUserMessage,
 } from "@/lib/prompts";
+import { AnalysisOutputSchema } from "@/lib/schemas/analysis";
 
 const AnalyzeBodySchema = z.object({
   creative_id: z.string().uuid("creative_id must be a valid UUID"),
@@ -69,11 +70,14 @@ export async function POST(request: NextRequest) {
       notes: snapshotData.notes ?? null,
     });
 
-    // Call LLM
-    let llmResult: Record<string, unknown>;
+    // Call LLM with Zod validation (auto-retries once on invalid JSON)
+    let llmResult;
     try {
-      const response = await callLLM(ANALYSIS_SYSTEM_PROMPT, userMessage);
-      llmResult = parseLLMJson<Record<string, unknown>>(response.content);
+      llmResult = await callLLMJson({
+        system: ANALYSIS_SYSTEM_PROMPT,
+        user: userMessage,
+        schema: AnalysisOutputSchema,
+      });
     } catch (llmErr) {
       console.error("[analyze] LLM error:", llmErr);
 
@@ -91,16 +95,16 @@ export async function POST(request: NextRequest) {
       product_category: llmResult.product_category ?? creative.product_category,
       marketplace_context:
         llmResult.marketplace_context ?? creative.marketplace_context,
-      hook_text: llmResult.hook_text ?? null,
-      hook_type: llmResult.hook_type ?? null,
-      angle: llmResult.angle ?? null,
-      structure: llmResult.structure ?? null,
-      proof_type: llmResult.proof_type ?? null,
-      objections: llmResult.objections ?? [],
-      cta_type: llmResult.cta_type ?? null,
-      cta_text: llmResult.cta_text ?? null,
-      editing_notes: llmResult.editing_notes ?? null,
-      script_skeleton: llmResult.script_skeleton ?? null,
+      hook_text: llmResult.hook_text,
+      hook_type: llmResult.hook_type,
+      angle: llmResult.angle,
+      structure: llmResult.structure,
+      proof_type: llmResult.proof_type,
+      objections: llmResult.objections,
+      cta_type: llmResult.cta_type,
+      cta_text: llmResult.cta_text,
+      editing_notes: llmResult.editing_notes,
+      script_skeleton: llmResult.script_skeleton,
     };
 
     const { data: updated, error: updateError } = await supabase

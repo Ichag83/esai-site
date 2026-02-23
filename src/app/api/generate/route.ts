@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
-import { callLLM, parseLLMJson } from "@/lib/llm";
+import { callLLMJson } from "@/lib/llm";
 import {
   GENERATION_SYSTEM_PROMPT,
   buildGenerationUserMessage,
   PatternSummary,
 } from "@/lib/prompts";
+import { GenerationOutputSchema } from "@/lib/schemas/generation";
 
 const GenerateBodySchema = z.object({
   target_platform: z.enum(["tiktok", "meta", "youtube", "universal"]),
@@ -77,12 +78,15 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Fetch matching patterns
+    // Fetch matching patterns ordered by ranking signals
     const { data: patterns } = await supabase
       .from("patterns")
-      .select("pattern_name, hook_formula, structure, script_skeleton, why_it_works")
+      .select("id, pattern_name, hook_formula, structure, script_skeleton, why_it_works")
       .or(`platform.eq.${target_platform},platform.eq.universal`)
       .or(`product_category.eq.${raw.product_category},product_category.eq.geral`)
+      .order("win_rate_estimate", { ascending: false })
+      .order("usage_count", { ascending: false })
+      .order("updated_at", { ascending: false })
       .limit(6);
 
     const patternList: PatternSummary[] = (patterns ?? []).map((p) => ({
@@ -141,10 +145,13 @@ export async function POST(request: NextRequest) {
       product_image_urls: raw.product_image_urls,
     });
 
-    let output: unknown;
+    let output;
     try {
-      const response = await callLLM(GENERATION_SYSTEM_PROMPT, userMessage);
-      output = parseLLMJson(response.content);
+      output = await callLLMJson({
+        system: GENERATION_SYSTEM_PROMPT,
+        user: userMessage,
+        schema: GenerationOutputSchema,
+      });
     } catch (llmErr) {
       console.error("[generate] LLM error:", llmErr);
       await supabase
@@ -164,6 +171,16 @@ export async function POST(request: NextRequest) {
     if (updateError) {
       console.error("[generate] DB update error:", updateError);
       return NextResponse.json({ error: "Failed to save output" }, { status: 500 });
+    }
+
+    // Increment usage_count for the patterns that were used
+    const patternIds = (patterns ?? []).map((p) => p.id).filter(Boolean) as string[];
+    if (patternIds.length > 0) {
+      await Promise.all(
+        patternIds.map((id) =>
+          supabase.rpc("increment_pattern_usage", { pattern_id: id })
+        )
+      );
     }
 
     return NextResponse.json({
