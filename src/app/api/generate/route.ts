@@ -8,13 +8,8 @@ import {
   PatternSummary,
 } from "@/lib/prompts";
 
-/** Normalise platform: treat "instagram" as "meta" internally. */
-function normalisePlatform(p: string): string {
-  return p === "instagram" ? "meta" : p;
-}
-
 const GenerateBodySchema = z.object({
-  target_platform: z.enum(["tiktok", "meta", "instagram", "youtube", "universal"]),
+  target_platform: z.enum(["tiktok", "meta", "youtube", "universal"]),
   marketplace_context: z.enum([
     "mercado_livre",
     "shopee",
@@ -60,7 +55,7 @@ export async function POST(request: NextRequest) {
     }
 
     const raw = parsed.data;
-    const target_platform = normalisePlatform(raw.target_platform);
+    const target_platform = raw.target_platform;
 
     // If a product_asset_id was supplied, verify it belongs to this user and is READY
     if (raw.product_asset_id) {

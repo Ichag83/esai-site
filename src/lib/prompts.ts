@@ -13,7 +13,7 @@ Return ONLY valid JSON that matches the provided schema. No extra keys. No markd
 Context:
 - Country focus: Brazil
 - Language: pt-BR (even if ad has mixed language)
-- Platforms: TikTok and Instagram/Facebook (Meta)
+- Platforms: TikTok and Meta (Instagram/Facebook)
 - Goal: classify hooks, angles, structure, proof, CTAs, objections, editing style.
 
 JSON SCHEMA:

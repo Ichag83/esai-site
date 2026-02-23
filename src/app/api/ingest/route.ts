@@ -2,17 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 
-/**
- * Normalise platform: treat "instagram" as "meta" internally.
- * The UI may display "Instagram" as a label, but everything stored uses "meta".
- */
-function normalisePlatform(p: string): string {
-  return p === "instagram" ? "meta" : p;
-}
-
 const IngestBodySchema = z.object({
-  // Accept "instagram" as a valid incoming value; it is normalised to "meta" before saving.
-  source_platform: z.enum(["meta", "tiktok", "youtube", "instagram", "other"]),
+  source_platform: z.enum(["meta", "tiktok", "youtube", "other"]),
   source_url: z.string().url("source_url must be a valid URL"),
   product_category: z.string().min(1),
   marketplace_context: z.enum([
@@ -47,8 +38,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { source_url, product_category, marketplace_context } = parsed.data;
-    const source_platform = normalisePlatform(parsed.data.source_platform);
+    const { source_platform, source_url, product_category, marketplace_context } = parsed.data;
 
     const { data, error } = await supabase
       .from("creatives")
