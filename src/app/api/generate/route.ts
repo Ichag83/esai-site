@@ -8,16 +8,12 @@ import {
   PatternSummary,
 } from "@/lib/prompts";
 
-/**
- * Normalise platform: treat "instagram" as "meta" internally.
- * Pattern matching and generation prompts both use "meta" for Meta/Instagram content.
- */
+/** Normalise platform: treat "instagram" as "meta" internally. */
 function normalisePlatform(p: string): string {
   return p === "instagram" ? "meta" : p;
 }
 
 const GenerateBodySchema = z.object({
-  // "instagram" is accepted for backwards compat and normalised to "meta"
   target_platform: z.enum(["tiktok", "meta", "instagram", "youtube", "universal"]),
   marketplace_context: z.enum([
     "mercado_livre",
@@ -35,6 +31,9 @@ const GenerateBodySchema = z.object({
   target_audience: z.string().min(1),
   constraints: z.record(z.unknown()).default({}),
   output_count: z.number().int().min(1).max(20).default(5),
+  // Asset fields — optional; omit if no images were uploaded
+  product_asset_id: z.string().uuid().optional(),
+  product_image_urls: z.array(z.string().url()).max(5).default([]),
 });
 
 export async function POST(request: NextRequest) {
@@ -61,15 +60,32 @@ export async function POST(request: NextRequest) {
     }
 
     const raw = parsed.data;
-    // Normalise platform before any DB or LLM usage
     const target_platform = normalisePlatform(raw.target_platform);
 
-    // Fetch matching patterns — also match rows stored under "meta" when platform is meta
+    // If a product_asset_id was supplied, verify it belongs to this user and is READY
+    if (raw.product_asset_id) {
+      const { data: asset, error: assetErr } = await supabase
+        .from("product_assets")
+        .select("id, status")
+        .eq("id", raw.product_asset_id)
+        .eq("user_id", user.id)
+        .single();
+
+      if (assetErr || !asset) {
+        return NextResponse.json({ error: "Product asset not found" }, { status: 404 });
+      }
+      if (asset.status !== "READY") {
+        return NextResponse.json(
+          { error: "Product asset is not committed yet" },
+          { status: 422 }
+        );
+      }
+    }
+
+    // Fetch matching patterns
     const { data: patterns } = await supabase
       .from("patterns")
-      .select(
-        "pattern_name, hook_formula, structure, script_skeleton, why_it_works"
-      )
+      .select("pattern_name, hook_formula, structure, script_skeleton, why_it_works")
       .or(`platform.eq.${target_platform},platform.eq.universal`)
       .or(`product_category.eq.${raw.product_category},product_category.eq.geral`)
       .limit(6);
@@ -98,6 +114,8 @@ export async function POST(request: NextRequest) {
         target_audience: raw.target_audience,
         constraints: raw.constraints,
         output_count: raw.output_count,
+        product_asset_id: raw.product_asset_id ?? null,
+        product_image_urls: raw.product_image_urls,
         status: "PENDING",
       })
       .select("id")
@@ -111,7 +129,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Build and call LLM
+    // Build LLM prompt (includes image URLs if provided)
     const userMessage = buildGenerationUserMessage({
       output_count: raw.output_count,
       target_platform,
@@ -125,6 +143,7 @@ export async function POST(request: NextRequest) {
       target_audience: raw.target_audience,
       constraints: raw.constraints,
       patterns: patternList,
+      product_image_urls: raw.product_image_urls,
     });
 
     let output: unknown;
@@ -133,16 +152,13 @@ export async function POST(request: NextRequest) {
       output = parseLLMJson(response.content);
     } catch (llmErr) {
       console.error("[generate] LLM error:", llmErr);
-
       await supabase
         .from("generation_requests")
         .update({ status: "FAILED" })
         .eq("id", genRequest.id);
-
       return NextResponse.json({ error: "LLM generation failed" }, { status: 502 });
     }
 
-    // Save output
     const { data: updatedRequest, error: updateError } = await supabase
       .from("generation_requests")
       .update({ output, status: "DONE" })

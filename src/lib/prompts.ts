@@ -78,6 +78,8 @@ RULES:
 - Mention BR objections when relevant (Pix, frete, garantia, original, confiança), but don't overstuff.
 - Keep it compliant: do not invent certifications, medical claims, or impossible guarantees.
 - Captions must be short and readable.
+- visual_plan.shots must be concrete and filmable directions; do NOT invent product attributes not listed.
+- If product images are provided (URLs listed), reference their real visual elements in the visual_plan.
 Return JSON only.`;
 
 export interface PatternSummary {
@@ -101,6 +103,8 @@ export interface GenerationInput {
   target_audience: string;
   constraints: Record<string, unknown>;
   patterns: PatternSummary[];
+  /** Public URLs of uploaded product photos. Empty array = no photos. */
+  product_image_urls: string[];
 }
 
 export function buildGenerationUserMessage(input: GenerationInput): string {
@@ -113,6 +117,13 @@ export function buildGenerationUserMessage(input: GenerationInput): string {
           )
           .join("\n\n")
       : "No patterns available — use general Brazilian ecom ad best practices.";
+
+  const imagesSection =
+    input.product_image_urls.length > 0
+      ? `\nPRODUCT IMAGES (${input.product_image_urls.length} photo(s) uploaded by seller):
+${input.product_image_urls.map((u, i) => `  Image ${i + 1}: ${u}`).join("\n")}
+When writing visual_plan, reference the real product photos above. Do NOT invent visual details not supported by the product description.`
+      : "\nPRODUCT IMAGES: None provided. Base visual_plan on product description and category conventions.";
 
   return `GOAL:
 Generate ${input.output_count} ad variations for ${input.target_platform} with Brazilian tone (pt-BR),
@@ -128,6 +139,7 @@ Price: ${input.price}
 Offer terms: ${JSON.stringify(input.offer_terms)}
 Audience: ${input.target_audience}
 Constraints: ${JSON.stringify(input.constraints)}
+${imagesSection}
 
 AVAILABLE PATTERNS (use these as inspiration; do not copy verbatim):
 ${patternsList}
@@ -151,6 +163,11 @@ OUTPUT JSON SCHEMA:
         "cuts": "many|some",
         "framing": "closeup|mixed",
         "notes": "string"
+      },
+      "visual_plan": {
+        "shots": ["string","string","string"],
+        "image_usage": "string",
+        "recommended_angle": "closeup|overhead|eye_level|45deg"
       },
       "cta": {
         "type": "direto|suave|urgencia|cupom|frete|estoque|whatsapp|link_bio",

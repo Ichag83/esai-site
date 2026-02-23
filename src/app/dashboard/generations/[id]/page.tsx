@@ -2,6 +2,12 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 
+type VisualPlan = {
+  shots: string[];
+  image_usage: string;
+  recommended_angle: string;
+};
+
 type Variation = {
   variation_id: string;
   hook: { text: string; type: string };
@@ -13,6 +19,7 @@ type Variation = {
     framing: string;
     notes: string;
   };
+  visual_plan?: VisualPlan;
   cta: { type: string; text: string };
   claims_to_avoid: string[];
 };
@@ -30,6 +37,7 @@ type GenerationRequest = {
   output_count: number;
   status: string;
   output: GenerationOutput | null;
+  product_image_urls: string[];
   created_at: string;
 };
 
@@ -84,12 +92,32 @@ export default async function GenerationDetailPage({
       </div>
 
       {/* Request metadata */}
-      <div className="bg-white border border-gray-200 rounded-lg px-4 py-3 mb-6 text-sm text-gray-600 flex flex-wrap gap-4">
+      <div className="bg-white border border-gray-200 rounded-lg px-4 py-3 mb-4 text-sm text-gray-600 flex flex-wrap gap-4">
         <span>Plataforma: <strong>{request.target_platform}</strong></span>
         <span>Marketplace: <strong>{request.marketplace_context}</strong></span>
         <span>Categoria: <strong>{request.product_category}</strong></span>
         <span>Data: <strong>{new Date(request.created_at).toLocaleDateString("pt-BR")}</strong></span>
       </div>
+
+      {/* Product images strip */}
+      {request.product_image_urls?.length > 0 && (
+        <div className="bg-white border border-gray-200 rounded-lg px-4 py-3 mb-6">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+            Fotos do produto ({request.product_image_urls.length})
+          </p>
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {request.product_image_urls.map((url, i) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={i}
+                src={url}
+                alt={`Produto ${i + 1}`}
+                className="h-20 w-20 object-cover rounded border border-gray-200 flex-shrink-0"
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       {variations.length === 0 ? (
         <div className="bg-white border border-gray-200 rounded-lg p-6">
@@ -98,8 +126,6 @@ export default async function GenerationDetailPage({
               ? "A geração falhou. Tente novamente."
               : "Aguardando geração…"}
           </p>
-
-          {/* Raw output fallback */}
           {request.output && (
             <pre className="mt-4 text-xs text-gray-600 bg-gray-50 rounded p-3 overflow-auto max-h-96">
               {JSON.stringify(request.output, null, 2)}
@@ -133,9 +159,7 @@ function VariationCard({ variation: v }: { variation: Variation }) {
       <div className="p-4 space-y-4">
         {/* Hook */}
         <div>
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-            Hook
-          </p>
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Hook</p>
           <p className="text-gray-800 font-medium">{v.hook.text}</p>
         </div>
 
@@ -146,12 +170,41 @@ function VariationCard({ variation: v }: { variation: Variation }) {
           </p>
           <ol className="space-y-1 list-decimal list-inside">
             {v.script.beats.map((beat, i) => (
-              <li key={i} className="text-sm text-gray-700">
-                {beat}
-              </li>
+              <li key={i} className="text-sm text-gray-700">{beat}</li>
             ))}
           </ol>
         </div>
+
+        {/* Visual plan */}
+        {v.visual_plan && (
+          <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-3 space-y-2">
+            <p className="text-xs font-semibold text-indigo-700 uppercase tracking-wide">
+              Plano visual
+            </p>
+            {v.visual_plan.shots?.length > 0 && (
+              <div>
+                <p className="text-xs text-indigo-500 mb-1">Shots</p>
+                <ol className="list-decimal list-inside space-y-0.5">
+                  {v.visual_plan.shots.map((s, i) => (
+                    <li key={i} className="text-sm text-indigo-900">{s}</li>
+                  ))}
+                </ol>
+              </div>
+            )}
+            {v.visual_plan.image_usage && (
+              <div>
+                <p className="text-xs text-indigo-500 mb-0.5">Uso das imagens</p>
+                <p className="text-sm text-indigo-900">{v.visual_plan.image_usage}</p>
+              </div>
+            )}
+            {v.visual_plan.recommended_angle && (
+              <p className="text-xs text-indigo-600">
+                Ângulo recomendado:{" "}
+                <span className="font-medium">{v.visual_plan.recommended_angle}</span>
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Captions */}
         {v.on_screen_captions?.length > 0 && (
@@ -174,9 +227,7 @@ function VariationCard({ variation: v }: { variation: Variation }) {
 
         {/* CTA */}
         <div>
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-            CTA
-          </p>
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">CTA</p>
           <p className="text-sm text-gray-700">
             <span className="bg-blue-50 text-blue-700 text-xs px-1.5 py-0.5 rounded mr-2">
               {v.cta.type}
