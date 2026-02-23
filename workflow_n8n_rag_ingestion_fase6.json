@@ -1,0 +1,428 @@
+{
+  "name": "RAG Ingestion ESAI - Fase 6",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "11111111-2222-3333-4444-555555555501",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "name": "org_id", "value": "f33260e0-44f6-4f4a-bc83-55111c47c2d8", "type": "string" },
+            { "name": "source_name", "value": "={{ $json.source_name || 'manual_input' }}", "type": "string" },
+            { "name": "source_type", "value": "={{ $json.source_type || 'text' }}", "type": "string" },
+            { "name": "raw_text", "value": "={{ $json.raw_text || '' }}", "type": "string" },
+            { "name": "version", "value": "={{ $json.version || 1 }}", "type": "number" },
+            { "name": "trace_id", "value": "={{ `rag_ingest:${$execution.id}` }}", "type": "string" }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "11111111-2222-3333-4444-555555555502",
+      "name": "Prepare ingestion input",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "tableId": "workflow_events",
+        "fieldsUi": {
+          "fieldValues": [
+            { "fieldId": "trace_id", "fieldValue": "={{ $json.trace_id }}" },
+            { "fieldId": "workflow_id", "fieldValue": "={{ $workflow.id }}" },
+            { "fieldId": "execution_id", "fieldValue": "={{ $execution.id }}" },
+            { "fieldId": "node_name", "fieldValue": "Prepare ingestion input" },
+            { "fieldId": "level", "fieldValue": "info" },
+            { "fieldId": "event", "fieldValue": "rag_ingest_started" },
+            { "fieldId": "payload", "fieldValue": "={{ $json }}" }
+          ]
+        }
+      },
+      "id": "11111111-2222-3333-4444-555555555503",
+      "name": "Log rag ingest started",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [440, 0],
+      "credentials": { "supabaseApi": { "id": "Yk3j0i1R3GXTYARZ", "name": "GuruRag" } }
+    },
+    {
+      "parameters": {
+        "jsCode": "const supported = ['text','txt','md','markdown','pdf','doc','docx'];\nconst sourceType = String($json.source_type || 'text').toLowerCase();\nconst text = String($json.raw_text || '').replace(/\n{3,}/g,'\\n\\n').trim();\nlet h = 2166136261;\nfor (let i = 0; i < text.length; i++) { h ^= text.charCodeAt(i); h += (h<<1)+(h<<4)+(h<<7)+(h<<8)+(h<<24); }\nconst content_hash = `fnv1a_${(h>>>0).toString(16)}`;\nreturn [{ ...$json, source_type: sourceType, content_text_clean: text, content_hash, extraction_supported: supported.includes(sourceType), extraction_note: supported.includes(sourceType) ? 'ok' : 'unsupported_source_type' }];"
+      },
+      "id": "11111111-2222-3333-4444-555555555504",
+      "name": "Normalize text and hash",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 },
+          "conditions": [
+            { "leftValue": "={{ $json.extraction_supported && !!$json.content_text_clean }}", "rightValue": "true", "operator": { "type": "string", "operation": "equals" } }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "11111111-2222-3333-4444-555555555505",
+      "name": "Extraction supported and non-empty?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [880, 0]
+    },
+    {
+      "parameters": {
+        "tableId": "workflow_events",
+        "fieldsUi": {
+          "fieldValues": [
+            { "fieldId": "trace_id", "fieldValue": "={{ $json.trace_id }}" },
+            { "fieldId": "workflow_id", "fieldValue": "={{ $workflow.id }}" },
+            { "fieldId": "execution_id", "fieldValue": "={{ $execution.id }}" },
+            { "fieldId": "node_name", "fieldValue": "Normalize text and hash" },
+            { "fieldId": "level", "fieldValue": "error" },
+            { "fieldId": "event", "fieldValue": "rag_extract_fail" },
+            { "fieldId": "payload", "fieldValue": "={{ { source_type: $json.source_type, extraction_note: $json.extraction_note } }}" }
+          ]
+        }
+      },
+      "id": "11111111-2222-3333-4444-555555555506",
+      "name": "Log rag extract fail",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1100, 100],
+      "credentials": { "supabaseApi": { "id": "Yk3j0i1R3GXTYARZ", "name": "GuruRag" } }
+    },
+    {
+      "parameters": {
+        "tableId": "workflow_events",
+        "fieldsUi": {
+          "fieldValues": [
+            { "fieldId": "trace_id", "fieldValue": "={{ $json.trace_id }}" },
+            { "fieldId": "workflow_id", "fieldValue": "={{ $workflow.id }}" },
+            { "fieldId": "execution_id", "fieldValue": "={{ $execution.id }}" },
+            { "fieldId": "node_name", "fieldValue": "Normalize text and hash" },
+            { "fieldId": "level", "fieldValue": "info" },
+            { "fieldId": "event", "fieldValue": "rag_extract_success" },
+            { "fieldId": "payload", "fieldValue": "={{ { source_name: $json.source_name, source_type: $json.source_type, length: ($json.content_text_clean || '').length } }}" }
+          ]
+        }
+      },
+      "id": "11111111-2222-3333-4444-555555555507",
+      "name": "Log rag extract success",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1100, -80],
+      "credentials": { "supabaseApi": { "id": "Yk3j0i1R3GXTYARZ", "name": "GuruRag" } }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "knowledge_documents",
+        "limit": 1,
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            { "keyName": "org_id", "condition": "eq", "keyValue": "={{ $json.org_id }}" },
+            { "keyName": "source_name", "condition": "eq", "keyValue": "={{ $json.source_name }}" },
+            { "keyName": "content_hash", "condition": "eq", "keyValue": "={{ $json.content_hash }}" },
+            { "keyName": "is_active", "condition": "eq", "keyValue": "true" }
+          ]
+        }
+      },
+      "id": "11111111-2222-3333-4444-555555555508",
+      "name": "Check duplicate by hash",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1320, -80],
+      "alwaysOutputData": true,
+      "credentials": { "supabaseApi": { "id": "Yk3j0i1R3GXTYARZ", "name": "GuruRag" } }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 },
+          "conditions": [
+            { "leftValue": "={{ $json.id }}", "operator": { "type": "string", "operation": "notEmpty", "singleValue": true } }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "11111111-2222-3333-4444-555555555509",
+      "name": "Duplicate active doc?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [1540, -80]
+    },
+    {
+      "parameters": {
+        "tableId": "workflow_events",
+        "fieldsUi": {
+          "fieldValues": [
+            { "fieldId": "trace_id", "fieldValue": "={{ $node['Normalize text and hash'].json.trace_id }}" },
+            { "fieldId": "workflow_id", "fieldValue": "={{ $workflow.id }}" },
+            { "fieldId": "execution_id", "fieldValue": "={{ $execution.id }}" },
+            { "fieldId": "node_name", "fieldValue": "Check duplicate by hash" },
+            { "fieldId": "level", "fieldValue": "info" },
+            { "fieldId": "event", "fieldValue": "rag_ingest_skipped_duplicate" },
+            { "fieldId": "payload", "fieldValue": "={{ { source_name: $node['Normalize text and hash'].json.source_name, content_hash: $node['Normalize text and hash'].json.content_hash } }}" }
+          ]
+        }
+      },
+      "id": "11111111-2222-3333-4444-555555555510",
+      "name": "Log ingest skipped duplicate",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1760, 20],
+      "credentials": { "supabaseApi": { "id": "Yk3j0i1R3GXTYARZ", "name": "GuruRag" } }
+    },
+    {
+      "parameters": {
+        "tableId": "knowledge_documents",
+        "fieldsUi": {
+          "fieldValues": [
+            { "fieldId": "org_id", "fieldValue": "={{ $node['Normalize text and hash'].json.org_id }}" },
+            { "fieldId": "source_name", "fieldValue": "={{ $node['Normalize text and hash'].json.source_name }}" },
+            { "fieldId": "source_type", "fieldValue": "={{ $node['Normalize text and hash'].json.source_type }}" },
+            { "fieldId": "content_hash", "fieldValue": "={{ $node['Normalize text and hash'].json.content_hash }}" },
+            { "fieldId": "version", "fieldValue": "={{ $node['Normalize text and hash'].json.version || 1 }}" },
+            { "fieldId": "is_active", "fieldValue": "true" },
+            { "fieldId": "metadata", "fieldValue": "={{ { trace_id: $node['Normalize text and hash'].json.trace_id } }}" }
+          ]
+        }
+      },
+      "id": "11111111-2222-3333-4444-555555555511",
+      "name": "Create knowledge document",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1760, -180],
+      "credentials": { "supabaseApi": { "id": "Yk3j0i1R3GXTYARZ", "name": "GuruRag" } }
+    },
+    {
+      "parameters": {
+        "jsCode": "const doc = $json;\nconst text = String($node['Normalize text and hash'].json.content_text_clean || '');\nconst size = 800;\nconst overlap = 120;\nconst chunks = [];\nlet i = 0;\nfor (let start = 0; start < text.length; start += (size - overlap)) {\n  const part = text.slice(start, start + size).trim();\n  if (!part) continue;\n  chunks.push({ json: { org_id: $node['Normalize text and hash'].json.org_id, document_id: doc.id, chunk_index: i++, content_text: part, metadata: { source_name: $node['Normalize text and hash'].json.source_name, source_type: $node['Normalize text and hash'].json.source_type, version: $node['Normalize text and hash'].json.version || 1 }, trace_id: $node['Normalize text and hash'].json.trace_id } });\n}\nreturn chunks.length ? chunks : [{ json: { org_id: $node['Normalize text and hash'].json.org_id, document_id: doc.id, chunk_index: 0, content_text: text, metadata: { source_name: $node['Normalize text and hash'].json.source_name }, trace_id: $node['Normalize text and hash'].json.trace_id } }];"
+      },
+      "id": "11111111-2222-3333-4444-555555555512",
+      "name": "Chunk document text",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1980, -180]
+    },
+    {
+      "parameters": {
+        "tableId": "workflow_events",
+        "fieldsUi": {
+          "fieldValues": [
+            { "fieldId": "trace_id", "fieldValue": "={{ $json.trace_id }}" },
+            { "fieldId": "workflow_id", "fieldValue": "={{ $workflow.id }}" },
+            { "fieldId": "execution_id", "fieldValue": "={{ $execution.id }}" },
+            { "fieldId": "node_name", "fieldValue": "Chunk document text" },
+            { "fieldId": "level", "fieldValue": "info" },
+            { "fieldId": "event", "fieldValue": "rag_chunking_done" },
+            { "fieldId": "payload", "fieldValue": "={{ { document_id: $json.document_id, chunk_index: $json.chunk_index } }}" }
+          ]
+        }
+      },
+      "id": "11111111-2222-3333-4444-555555555513",
+      "name": "Log rag chunking done",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [2200, -180],
+      "credentials": { "supabaseApi": { "id": "Yk3j0i1R3GXTYARZ", "name": "GuruRag" } }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/embeddings",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{$env.OPENAI_API_KEY}}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { model: 'text-embedding-3-small', input: $json.content_text } }}",
+        "options": {
+          "response": { "response": { "fullResponse": true } }
+        }
+      },
+      "id": "11111111-2222-3333-4444-555555555514",
+      "name": "Create embedding",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [2420, -180],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "name": "embedding", "value": "={{ $json.body?.data?.[0]?.embedding || [] }}", "type": "array" },
+            { "name": "embedding_ok", "value": "={{ !!$json.body?.data?.[0]?.embedding }}", "type": "boolean" }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "11111111-2222-3333-4444-555555555515",
+      "name": "Map embedding output",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [2640, -180]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 },
+          "conditions": [
+            { "leftValue": "={{ $json.embedding_ok }}", "rightValue": "true", "operator": { "type": "boolean", "operation": "true", "singleValue": true } }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "11111111-2222-3333-4444-555555555516",
+      "name": "Embedding generated?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [2860, -180]
+    },
+    {
+      "parameters": {
+        "tableId": "knowledge_chunks",
+        "fieldsUi": {
+          "fieldValues": [
+            { "fieldId": "document_id", "fieldValue": "={{ $node['Chunk document text'].json.document_id }}" },
+            { "fieldId": "org_id", "fieldValue": "={{ $node['Chunk document text'].json.org_id }}" },
+            { "fieldId": "chunk_index", "fieldValue": "={{ $node['Chunk document text'].json.chunk_index }}" },
+            { "fieldId": "content_text", "fieldValue": "={{ $node['Chunk document text'].json.content_text }}" },
+            { "fieldId": "embedding", "fieldValue": "={{ $json.embedding }}" },
+            { "fieldId": "metadata", "fieldValue": "={{ $node['Chunk document text'].json.metadata }}" },
+            { "fieldId": "is_active", "fieldValue": "true" }
+          ]
+        }
+      },
+      "id": "11111111-2222-3333-4444-555555555517",
+      "name": "Insert knowledge chunk",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [3080, -240],
+      "credentials": { "supabaseApi": { "id": "Yk3j0i1R3GXTYARZ", "name": "GuruRag" } }
+    },
+    {
+      "parameters": {
+        "tableId": "workflow_events",
+        "fieldsUi": {
+          "fieldValues": [
+            { "fieldId": "trace_id", "fieldValue": "={{ $node['Chunk document text'].json.trace_id }}" },
+            { "fieldId": "workflow_id", "fieldValue": "={{ $workflow.id }}" },
+            { "fieldId": "execution_id", "fieldValue": "={{ $execution.id }}" },
+            { "fieldId": "node_name", "fieldValue": "Create embedding" },
+            { "fieldId": "level", "fieldValue": "info" },
+            { "fieldId": "event", "fieldValue": "rag_embedding_done" },
+            { "fieldId": "payload", "fieldValue": "={{ { document_id: $node['Chunk document text'].json.document_id, chunk_index: $node['Chunk document text'].json.chunk_index } }}" }
+          ]
+        }
+      },
+      "id": "11111111-2222-3333-4444-555555555518",
+      "name": "Log rag embedding done",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [3300, -240],
+      "credentials": { "supabaseApi": { "id": "Yk3j0i1R3GXTYARZ", "name": "GuruRag" } }
+    },
+    {
+      "parameters": {
+        "tableId": "workflow_events",
+        "fieldsUi": {
+          "fieldValues": [
+            { "fieldId": "trace_id", "fieldValue": "={{ $node['Chunk document text'].json.trace_id }}" },
+            { "fieldId": "workflow_id", "fieldValue": "={{ $workflow.id }}" },
+            { "fieldId": "execution_id", "fieldValue": "={{ $execution.id }}" },
+            { "fieldId": "node_name", "fieldValue": "Create embedding" },
+            { "fieldId": "level", "fieldValue": "error" },
+            { "fieldId": "event", "fieldValue": "rag_extract_fail" },
+            { "fieldId": "payload", "fieldValue": "={{ { reason: 'embedding_failed', statusCode: $json.statusCode || null } }}" }
+          ]
+        }
+      },
+      "id": "11111111-2222-3333-4444-555555555519",
+      "name": "Log embedding failed",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [3080, -120],
+      "credentials": { "supabaseApi": { "id": "Yk3j0i1R3GXTYARZ", "name": "GuruRag" } }
+    },
+    {
+      "parameters": {
+        "tableId": "workflow_events",
+        "fieldsUi": {
+          "fieldValues": [
+            { "fieldId": "trace_id", "fieldValue": "={{ $node['Chunk document text'].json.trace_id }}" },
+            { "fieldId": "workflow_id", "fieldValue": "={{ $workflow.id }}" },
+            { "fieldId": "execution_id", "fieldValue": "={{ $execution.id }}" },
+            { "fieldId": "node_name", "fieldValue": "Insert knowledge chunk" },
+            { "fieldId": "level", "fieldValue": "info" },
+            { "fieldId": "event", "fieldValue": "rag_ingest_completed" },
+            { "fieldId": "payload", "fieldValue": "={{ { document_id: $node['Chunk document text'].json.document_id } }}" }
+          ]
+        }
+      },
+      "id": "11111111-2222-3333-4444-555555555520",
+      "name": "Log rag ingest completed",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [3520, -240],
+      "credentials": { "supabaseApi": { "id": "Yk3j0i1R3GXTYARZ", "name": "GuruRag" } }
+    }
+  ],
+  "connections": {
+    "Manual Trigger": { "main": [[{ "node": "Prepare ingestion input", "type": "main", "index": 0 }]] },
+    "Prepare ingestion input": { "main": [[{ "node": "Log rag ingest started", "type": "main", "index": 0 }]] },
+    "Log rag ingest started": { "main": [[{ "node": "Normalize text and hash", "type": "main", "index": 0 }]] },
+    "Normalize text and hash": { "main": [[{ "node": "Extraction supported and non-empty?", "type": "main", "index": 0 }]] },
+    "Extraction supported and non-empty?": {
+      "main": [
+        [{ "node": "Log rag extract success", "type": "main", "index": 0 }],
+        [{ "node": "Log rag extract fail", "type": "main", "index": 0 }]
+      ]
+    },
+    "Log rag extract success": { "main": [[{ "node": "Check duplicate by hash", "type": "main", "index": 0 }]] },
+    "Check duplicate by hash": { "main": [[{ "node": "Duplicate active doc?", "type": "main", "index": 0 }]] },
+    "Duplicate active doc?": {
+      "main": [
+        [{ "node": "Log ingest skipped duplicate", "type": "main", "index": 0 }],
+        [{ "node": "Create knowledge document", "type": "main", "index": 0 }]
+      ]
+    },
+    "Create knowledge document": { "main": [[{ "node": "Chunk document text", "type": "main", "index": 0 }]] },
+    "Chunk document text": { "main": [[{ "node": "Log rag chunking done", "type": "main", "index": 0 }]] },
+    "Log rag chunking done": { "main": [[{ "node": "Create embedding", "type": "main", "index": 0 }]] },
+    "Create embedding": { "main": [[{ "node": "Map embedding output", "type": "main", "index": 0 }]] },
+    "Map embedding output": { "main": [[{ "node": "Embedding generated?", "type": "main", "index": 0 }]] },
+    "Embedding generated?": {
+      "main": [
+        [{ "node": "Insert knowledge chunk", "type": "main", "index": 0 }],
+        [{ "node": "Log embedding failed", "type": "main", "index": 0 }]
+      ]
+    },
+    "Insert knowledge chunk": { "main": [[{ "node": "Log rag embedding done", "type": "main", "index": 0 }]] },
+    "Log rag embedding done": { "main": [[{ "node": "Log rag ingest completed", "type": "main", "index": 0 }]] }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1", "availableInMCP": false },
+  "versionId": "fase6-rag-ingestion-v1",
+  "id": "fase6RagIngestionWorkflow",
+  "tags": []
+}

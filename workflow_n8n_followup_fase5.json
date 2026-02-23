@@ -1,0 +1,848 @@
+{
+  "name": "Automação WhatsApp ESAI - Follow-up Fase 5",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "id": "a9f8e7d6-c5b4-4321-9876-1234567890aa",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "conversation_state",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "ai_paused",
+              "condition": "eq",
+              "keyValue": "false"
+            },
+            {
+              "keyName": "handoff_status",
+              "condition": "neq",
+              "keyValue": "open"
+            },
+            {
+              "keyName": "state",
+              "condition": "neq",
+              "keyValue": "closed"
+            }
+          ]
+        }
+      },
+      "id": "b9f8e7d6-c5b4-4321-9876-1234567890ab",
+      "name": "Get conversation candidates",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        224,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date();\nconst lb = $json.last_outbound_at ? new Date($json.last_outbound_at) : null;\nif (!lb) return [{ ...$json, followup_action: 'skip_no_outbound' }];\nconst h = (now - lb) / 36e5;\nconst stage = Number($json.followup_stage || 0);\nlet followup_action = 'skip_not_due';\nlet next_followup_at = $json.next_followup_at || null;\nif (stage < 1 && h >= 24) { followup_action = 'stage1'; next_followup_at = new Date(now.getTime() + 24*36e5).toISOString(); }\nelse if (stage < 2 && h >= 48) { followup_action = 'stage2'; next_followup_at = null; }\nreturn [{ ...$json, followup_action, next_followup_at, trace_id: `${$json.org_id || 'org'}:${$json.channel_id || 'chan'}:${$json.phone || 'phone'}:${Date.now()}` }];"
+      },
+      "id": "c9f8e7d6-c5b4-4321-9876-1234567890ac",
+      "name": "Evaluate cadence 24h/48h",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ ['stage1','stage2'].includes($json.followup_action) }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "d9f8e7d6-c5b4-4321-9876-1234567890ad",
+      "name": "Follow-up due?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        672,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "tableId": "workflow_events",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "trace_id",
+              "fieldValue": "={{ $json.trace_id }}"
+            },
+            {
+              "fieldId": "workflow_id",
+              "fieldValue": "={{ $workflow.id }}"
+            },
+            {
+              "fieldId": "execution_id",
+              "fieldValue": "={{ $execution.id }}"
+            },
+            {
+              "fieldId": "node_name",
+              "fieldValue": "Get conversation candidates"
+            },
+            {
+              "fieldId": "level",
+              "fieldValue": "info"
+            },
+            {
+              "fieldId": "event",
+              "fieldValue": "followup_candidate_found"
+            },
+            {
+              "fieldId": "payload",
+              "fieldValue": "={{ $json }}"
+            }
+          ]
+        }
+      },
+      "id": "e9f8e7d6-c5b4-4321-9876-1234567890ae",
+      "name": "Log followup candidate",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        896,
+        -96
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "messages",
+        "limit": 1,
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "org_id",
+              "condition": "eq",
+              "keyValue": "={{ $node['Evaluate cadence 24h/48h'].json.org_id }}"
+            },
+            {
+              "keyName": "channel_id",
+              "condition": "eq",
+              "keyValue": "={{ $node['Evaluate cadence 24h/48h'].json.channel_id }}"
+            },
+            {
+              "keyName": "phone",
+              "condition": "eq",
+              "keyValue": "={{ $node['Evaluate cadence 24h/48h'].json.phone }}"
+            },
+            {
+              "keyName": "direction",
+              "condition": "eq",
+              "keyValue": "inbound"
+            },
+            {
+              "keyName": "created_at",
+              "condition": "gt",
+              "keyValue": "={{ $node['Evaluate cadence 24h/48h'].json.last_outbound_at }}"
+            }
+          ]
+        }
+      },
+      "id": "f9f8e7d6-c5b4-4321-9876-1234567890af",
+      "name": "Check newer inbound",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        -96
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.id }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "09f8e7d6-c5b4-4321-9876-1234567890b0",
+      "name": "Inbound after outbound?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1344,
+        -96
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "message",
+              "value": "={{ $json.followup_action === 'stage1' ? 'Oi! Passando para saber se você conseguiu avançar com os documentos 😊 Se quiser, te ajudo no próximo passo.' : 'Só confirmando se ainda faz sentido seguirmos com seu atendimento. Se quiser continuar, me responda por aqui e eu te ajudo.' }}",
+              "type": "string"
+            },
+            {
+              "name": "followup_stage",
+              "value": "={{ $json.followup_action === 'stage1' ? 1 : 2 }}",
+              "type": "number"
+            },
+            {
+              "name": "trace_id",
+              "value": "={{ $json.trace_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "19f8e7d6-c5b4-4321-9876-1234567890b1",
+      "name": "Build followup message",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1568,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.WHATSAPP_SERVER_URL }}/message/sendText/{{ $env.WHATSAPP_INSTANCE }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.WHATSAPP_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $json.phone }}@s.whatsapp.net"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.message }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "id": "29f8e7d6-c5b4-4321-9876-1234567890b2",
+      "name": "Send followup",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1792,
+        -160
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ ($json.statusCode || 0) >= 200 && ($json.statusCode || 0) < 300 }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "39f8e7d6-c5b4-4321-9876-1234567890b3",
+      "name": "Followup sent?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2016,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "tableId": "messages",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "org_id",
+              "fieldValue": "={{ $node['Build followup message'].json.org_id }}"
+            },
+            {
+              "fieldId": "channel_id",
+              "fieldValue": "={{ $node['Build followup message'].json.channel_id }}"
+            },
+            {
+              "fieldId": "direction",
+              "fieldValue": "outbound"
+            },
+            {
+              "fieldId": "message_id",
+              "fieldValue": "={{ `followup:${$node['Build followup message'].json.phone}:${$now.toISO()}` }}"
+            },
+            {
+              "fieldId": "phone",
+              "fieldValue": "={{ $node['Build followup message'].json.phone }}"
+            },
+            {
+              "fieldId": "message_type",
+              "fieldValue": "text"
+            },
+            {
+              "fieldId": "content_text",
+              "fieldValue": "={{ $node['Build followup message'].json.message }}"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "={{ $node['Followup sent?'].json ? 'sent' : 'failed' }}"
+            },
+            {
+              "fieldId": "trace_id",
+              "fieldValue": "={{ $node['Build followup message'].json.trace_id }}"
+            },
+            {
+              "fieldId": "raw_payload",
+              "fieldValue": "={{ $json }}"
+            }
+          ]
+        }
+      },
+      "id": "49f8e7d6-c5b4-4321-9876-1234567890b4",
+      "name": "Persist followup outbound",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2240,
+        -224
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "conversation_state",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "org_id",
+              "condition": "eq",
+              "keyValue": "={{ $node['Build followup message'].json.org_id }}"
+            },
+            {
+              "keyName": "channel_id",
+              "condition": "eq",
+              "keyValue": "={{ $node['Build followup message'].json.channel_id }}"
+            },
+            {
+              "keyName": "phone",
+              "condition": "eq",
+              "keyValue": "={{ $node['Build followup message'].json.phone }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "followup_stage",
+              "fieldValue": "={{ $node['Build followup message'].json.followup_stage }}"
+            },
+            {
+              "fieldId": "next_followup_at",
+              "fieldValue": "={{ $node['Build followup message'].json.followup_stage === 1 ? $node['Evaluate cadence 24h/48h'].json.next_followup_at : null }}"
+            },
+            {
+              "fieldId": "last_outbound_at",
+              "fieldValue": "={{ $now }}"
+            },
+            {
+              "fieldId": "last_intent",
+              "fieldValue": "={{ 'FOLLOWUP_STAGE_' + $node['Build followup message'].json.followup_stage }}"
+            }
+          ]
+        }
+      },
+      "id": "59f8e7d6-c5b4-4321-9876-1234567890b5",
+      "name": "Update state after followup",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2464,
+        -224
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "workflow_events",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "trace_id",
+              "fieldValue": "={{ $node['Build followup message'].json.trace_id }}"
+            },
+            {
+              "fieldId": "workflow_id",
+              "fieldValue": "={{ $workflow.id }}"
+            },
+            {
+              "fieldId": "execution_id",
+              "fieldValue": "={{ $execution.id }}"
+            },
+            {
+              "fieldId": "node_name",
+              "fieldValue": "Send followup"
+            },
+            {
+              "fieldId": "level",
+              "fieldValue": "={{ $node['Followup sent?'].json ? 'info' : 'error' }}"
+            },
+            {
+              "fieldId": "event",
+              "fieldValue": "={{ $node['Followup sent?'].json ? 'followup_sent' : 'outbound_send_failed' }}"
+            },
+            {
+              "fieldId": "payload",
+              "fieldValue": "={{ $json }}"
+            }
+          ]
+        }
+      },
+      "id": "69f8e7d6-c5b4-4321-9876-1234567890b6",
+      "name": "Log followup result",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2240,
+        -96
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "workflow_events",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "trace_id",
+              "fieldValue": "={{ $json.trace_id || $execution.id }}"
+            },
+            {
+              "fieldId": "workflow_id",
+              "fieldValue": "={{ $workflow.id }}"
+            },
+            {
+              "fieldId": "execution_id",
+              "fieldValue": "={{ $execution.id }}"
+            },
+            {
+              "fieldId": "node_name",
+              "fieldValue": "Evaluate cadence 24h/48h"
+            },
+            {
+              "fieldId": "level",
+              "fieldValue": "info"
+            },
+            {
+              "fieldId": "event",
+              "fieldValue": "followup_skipped"
+            },
+            {
+              "fieldId": "payload",
+              "fieldValue": "={{ $json }}"
+            }
+          ]
+        }
+      },
+      "id": "79f8e7d6-c5b4-4321-9876-1234567890b7",
+      "name": "Log followup skipped",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        896,
+        96
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "2eb73daa-7faa-4f4d-97f1-08e5acab0059",
+              "leftValue": "={{ $json.opt_out === true || String($json.opt_out)===\"true\" }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        560,
+        120
+      ],
+      "id": "416d209a-c19b-4946-9c0a-29b9e19200d0",
+      "name": "Opt-out active? (followup)"
+    },
+    {
+      "parameters": {
+        "tableId": "workflow_events",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "trace_id",
+              "fieldValue": "={{ $json.trace_id || $execution.id }}"
+            },
+            {
+              "fieldId": "workflow_id",
+              "fieldValue": "={{ $workflow.id }}"
+            },
+            {
+              "fieldId": "execution_id",
+              "fieldValue": "={{ $execution.id }}"
+            },
+            {
+              "fieldId": "node_name",
+              "fieldValue": "Follow-up due?"
+            },
+            {
+              "fieldId": "level",
+              "fieldValue": "warn"
+            },
+            {
+              "fieldId": "event",
+              "fieldValue": "guardrail_opt_out_block"
+            },
+            {
+              "fieldId": "payload",
+              "fieldValue": "={{ { phone: $json.phone, reason: \"opt_out\" } }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        780,
+        180
+      ],
+      "id": "5f5eaf8a-d551-45bb-af78-db2fddbadd95",
+      "name": "Log followup opt-out block",
+      "credentials": {
+        "supabaseApi": {
+          "id": "Yk3j0i1R3GXTYARZ",
+          "name": "GuruRag"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get conversation candidates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get conversation candidates": {
+      "main": [
+        [
+          {
+            "node": "Evaluate cadence 24h/48h",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluate cadence 24h/48h": {
+      "main": [
+        [
+          {
+            "node": "Opt-out active? (followup)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Follow-up due?": {
+      "main": [
+        [
+          {
+            "node": "Log followup candidate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log followup skipped",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log followup candidate": {
+      "main": [
+        [
+          {
+            "node": "Check newer inbound",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check newer inbound": {
+      "main": [
+        [
+          {
+            "node": "Inbound after outbound?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Inbound after outbound?": {
+      "main": [
+        [
+          {
+            "node": "Log followup skipped",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build followup message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build followup message": {
+      "main": [
+        [
+          {
+            "node": "Send followup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send followup": {
+      "main": [
+        [
+          {
+            "node": "Followup sent?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Followup sent?": {
+      "main": [
+        [
+          {
+            "node": "Persist followup outbound",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Log followup result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log followup result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Persist followup outbound": {
+      "main": [
+        [
+          {
+            "node": "Update state after followup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Opt-out active? (followup)": {
+      "main": [
+        [
+          {
+            "node": "Log followup opt-out block",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Follow-up due?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log followup opt-out block": {
+      "main": [
+        [
+          {
+            "node": "Log followup skipped",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "fa57a74f-89a7-4f5a-8cc1-fase5followup0001",
+  "id": "fase5FollowupWorkflow",
+  "tags": []
+}
