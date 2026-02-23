@@ -3,7 +3,14 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-const PLATFORMS = ["meta", "tiktok", "instagram", "youtube", "other"] as const;
+/** Displayed label → internal value submitted to the API. */
+const SOURCE_PLATFORMS: { label: string; value: string }[] = [
+  { label: "Meta (Facebook / Instagram)", value: "meta" },
+  { label: "TikTok", value: "tiktok" },
+  { label: "YouTube", value: "youtube" },
+  { label: "Outro", value: "other" },
+];
+
 const MARKETPLACE_CONTEXTS = [
   "mercado_livre",
   "shopee",
@@ -18,8 +25,7 @@ export default function NewCreativePage() {
   const [sourcePlatform, setSourcePlatform] = useState<string>("meta");
   const [sourceUrl, setSourceUrl] = useState("");
   const [productCategory, setProductCategory] = useState("");
-  const [marketplaceContext, setMarketplaceContext] =
-    useState<string>("none");
+  const [marketplaceContext, setMarketplaceContext] = useState<string>("none");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -67,9 +73,9 @@ export default function NewCreativePage() {
             onChange={(e) => setSourcePlatform(e.target.value)}
             className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
           >
-            {PLATFORMS.map((p) => (
-              <option key={p} value={p}>
-                {p}
+            {SOURCE_PLATFORMS.map((p) => (
+              <option key={p.value} value={p.value}>
+                {p.label}
               </option>
             ))}
           </select>

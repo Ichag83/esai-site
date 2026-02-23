@@ -3,7 +3,17 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-const PLATFORMS = ["tiktok", "meta", "instagram", "youtube", "universal"] as const;
+/**
+ * Target platforms for generation.
+ * Instagram is merged into "meta" — no separate "instagram" option.
+ */
+const TARGET_PLATFORMS: { label: string; value: string }[] = [
+  { label: "TikTok", value: "tiktok" },
+  { label: "Meta (Facebook / Instagram)", value: "meta" },
+  { label: "YouTube", value: "youtube" },
+  { label: "Universal", value: "universal" },
+];
+
 const MARKETPLACE_CONTEXTS = [
   "mercado_livre",
   "shopee",
@@ -102,9 +112,9 @@ export default function GeneratePage() {
               onChange={(e) => update("target_platform", e.target.value)}
               className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
             >
-              {PLATFORMS.map((p) => (
-                <option key={p} value={p}>
-                  {p}
+              {TARGET_PLATFORMS.map((p) => (
+                <option key={p.value} value={p.value}>
+                  {p.label}
                 </option>
               ))}
             </select>

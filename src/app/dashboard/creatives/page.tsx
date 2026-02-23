@@ -29,6 +29,18 @@ const STATUS_CLASS: Record<string, string> = {
   FAILED: "badge-failed",
 };
 
+/**
+ * Display label for a stored platform value.
+ * Legacy rows may have "instagram" stored; show them as "Meta" too.
+ */
+function platformLabel(p: string): string {
+  if (p === "meta" || p === "instagram") return "Meta";
+  if (p === "tiktok") return "TikTok";
+  if (p === "youtube") return "YouTube";
+  if (p === "universal") return "Universal";
+  return p;
+}
+
 export default function CreativesPage() {
   const supabase = createClient();
 
@@ -44,10 +56,19 @@ export default function CreativesPage() {
     setLoading(true);
     let query = supabase
       .from("creatives")
-      .select("id, source_platform, source_url, product_category, marketplace_context, status, hook_text, hook_type, structure, created_at")
+      .select(
+        "id, source_platform, source_url, product_category, marketplace_context, status, hook_text, hook_type, structure, created_at"
+      )
       .order("created_at", { ascending: false });
 
-    if (platformFilter) query = query.eq("source_platform", platformFilter);
+    if (platformFilter) {
+      // "meta" filter also catches legacy "instagram" rows
+      if (platformFilter === "meta") {
+        query = query.in("source_platform", ["meta", "instagram"]);
+      } else {
+        query = query.eq("source_platform", platformFilter);
+      }
+    }
     if (categoryFilter) query = query.ilike("product_category", `%${categoryFilter}%`);
     if (statusFilter) query = query.eq("status", statusFilter);
 
@@ -100,9 +121,9 @@ export default function CreativesPage() {
           className="border border-gray-300 rounded text-sm px-2 py-1"
         >
           <option value="">Todas as plataformas</option>
-          <option value="meta">Meta</option>
+          {/* "meta" value also catches legacy "instagram" rows — see fetchCreatives */}
+          <option value="meta">Meta (Facebook / Instagram)</option>
           <option value="tiktok">TikTok</option>
-          <option value="instagram">Instagram</option>
           <option value="youtube">YouTube</option>
           <option value="other">Outro</option>
         </select>
@@ -154,12 +175,14 @@ export default function CreativesPage() {
             <tbody>
               {creatives.map((c) => (
                 <tr key={c.id} className="border-b border-gray-50 hover:bg-gray-50">
-                  <td className="px-4 py-2 capitalize">{c.source_platform}</td>
+                  <td className="px-4 py-2">{platformLabel(c.source_platform)}</td>
                   <td className="px-4 py-2">{c.product_category}</td>
                   <td className="px-4 py-2">{c.marketplace_context}</td>
                   <td className="px-4 py-2 max-w-xs">
                     <span className="text-gray-700 truncate block" title={c.hook_text ?? ""}>
-                      {c.hook_text ? `${c.hook_text.slice(0, 60)}…` : <span className="text-gray-300">—</span>}
+                      {c.hook_text
+                        ? `${c.hook_text.slice(0, 60)}…`
+                        : <span className="text-gray-300">—</span>}
                     </span>
                     {c.hook_type && (
                       <span className="text-xs text-gray-400">{c.hook_type}</span>

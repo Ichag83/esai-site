@@ -33,6 +33,10 @@ type GenerationRequest = {
   created_at: string;
 };
 
+/**
+ * Next.js 15: `params` is a Promise — it must be awaited before use.
+ * The prop type must match PageProps (params: Promise<…>).
+ */
 export default async function GenerationDetailPage({
   params,
 }: {

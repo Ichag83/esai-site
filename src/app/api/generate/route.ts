@@ -8,7 +8,16 @@ import {
   PatternSummary,
 } from "@/lib/prompts";
 
+/**
+ * Normalise platform: treat "instagram" as "meta" internally.
+ * Pattern matching and generation prompts both use "meta" for Meta/Instagram content.
+ */
+function normalisePlatform(p: string): string {
+  return p === "instagram" ? "meta" : p;
+}
+
 const GenerateBodySchema = z.object({
+  // "instagram" is accepted for backwards compat and normalised to "meta"
   target_platform: z.enum(["tiktok", "meta", "instagram", "youtube", "universal"]),
   marketplace_context: z.enum([
     "mercado_livre",
@@ -51,20 +60,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const data = parsed.data;
+    const raw = parsed.data;
+    // Normalise platform before any DB or LLM usage
+    const target_platform = normalisePlatform(raw.target_platform);
 
-    // Fetch matching patterns (platform + category; also include "universal" and "geral")
+    // Fetch matching patterns — also match rows stored under "meta" when platform is meta
     const { data: patterns } = await supabase
       .from("patterns")
       .select(
         "pattern_name, hook_formula, structure, script_skeleton, why_it_works"
       )
-      .or(
-        `platform.eq.${data.target_platform},platform.eq.universal`
-      )
-      .or(
-        `product_category.eq.${data.product_category},product_category.eq.geral`
-      )
+      .or(`platform.eq.${target_platform},platform.eq.universal`)
+      .or(`product_category.eq.${raw.product_category},product_category.eq.geral`)
       .limit(6);
 
     const patternList: PatternSummary[] = (patterns ?? []).map((p) => ({
@@ -80,17 +87,17 @@ export async function POST(request: NextRequest) {
       .from("generation_requests")
       .insert({
         user_id: user.id,
-        target_platform: data.target_platform,
-        marketplace_context: data.marketplace_context,
-        product_category: data.product_category,
-        product_name: data.product_name,
-        product_description: data.product_description,
-        product_bullets: data.product_bullets,
-        price: data.price,
-        offer_terms: data.offer_terms,
-        target_audience: data.target_audience,
-        constraints: data.constraints,
-        output_count: data.output_count,
+        target_platform,
+        marketplace_context: raw.marketplace_context,
+        product_category: raw.product_category,
+        product_name: raw.product_name,
+        product_description: raw.product_description,
+        product_bullets: raw.product_bullets,
+        price: raw.price,
+        offer_terms: raw.offer_terms,
+        target_audience: raw.target_audience,
+        constraints: raw.constraints,
+        output_count: raw.output_count,
         status: "PENDING",
       })
       .select("id")
@@ -106,17 +113,17 @@ export async function POST(request: NextRequest) {
 
     // Build and call LLM
     const userMessage = buildGenerationUserMessage({
-      output_count: data.output_count,
-      target_platform: data.target_platform,
-      product_name: data.product_name,
-      product_category: data.product_category,
-      marketplace_context: data.marketplace_context,
-      product_description: data.product_description,
-      product_bullets: data.product_bullets,
-      price: data.price,
-      offer_terms: data.offer_terms,
-      target_audience: data.target_audience,
-      constraints: data.constraints,
+      output_count: raw.output_count,
+      target_platform,
+      product_name: raw.product_name,
+      product_category: raw.product_category,
+      marketplace_context: raw.marketplace_context,
+      product_description: raw.product_description,
+      product_bullets: raw.product_bullets,
+      price: raw.price,
+      offer_terms: raw.offer_terms,
+      target_audience: raw.target_audience,
+      constraints: raw.constraints,
       patterns: patternList,
     });
 
