@@ -23,10 +23,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      {/* suppressHydrationWarning prevents mismatches caused by browser extensions */}
-      <body className="min-h-screen bg-gray-50" suppressHydrationWarning>
-        {children}
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
