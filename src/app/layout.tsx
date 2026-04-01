@@ -3,12 +3,12 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "Creative Brain BR",
-    template: "%s | Creative Brain BR",
+    default: "Ice & Code — Inteligência Criativa com IA",
+    template: "%s | Ice & Code",
   },
-  description: "Inteligência criativa para performance de ads brasileiros",
-  applicationName: "Creative Brain BR",
-  robots: { index: false, follow: false },
+  description: "Plataforma de IA para análise, geração e otimização de criativos de alta performance. Do briefing ao vídeo em minutos.",
+  applicationName: "Ice & Code",
+  robots: { index: true, follow: true },
 };
 
 export const viewport: Viewport = {
