@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
 /* ── Scroll reveal ─────────────────────────────── */
@@ -23,58 +23,80 @@ function useReveal() {
   }, []);
 }
 
-/* ── Parallax zoom on scroll ───────────────────── */
-function useParallaxZoom() {
+/* ── Cinematic scroll: hero zoom-in + section zoom-out/blur + cloud parallax */
+function useCinematicScroll() {
   useEffect(() => {
-    const targets = document.querySelectorAll<HTMLElement>(".ic-zoom-bg");
+    let rafId: number;
 
     const update = () => {
-      targets.forEach((el) => {
-        const wrapper = el.parentElement;
-        if (!wrapper) return;
-        const rect = wrapper.getBoundingClientRect();
-        const vh = window.innerHeight;
-        const progress = (vh - rect.top) / (vh + rect.height);
-        const clamped = Math.max(0, Math.min(1, progress));
-        // enters viewport: scale 1.15 → 1.0  (zoom out as it enters)
-        const scale = 1.15 - clamped * 0.15;
-        el.style.transform = `scale(${Math.max(1, scale)})`;
+      const vh = window.innerHeight;
+
+      /* 1 ── Hero BG: zooms in and fades as you scroll away */
+      const heroBg = document.querySelector<HTMLElement>(".ic-hero-zoom");
+      if (heroBg) {
+        const p = Math.min(1, window.scrollY / vh);
+        heroBg.style.transform = `scale(${1 + p * 0.2})`;
+        heroBg.style.opacity   = String(1 - p * 0.55);
+      }
+
+      /* 2 ── Zoom sections: enter with zoom-out, exit with zoom-in + blur */
+      document.querySelectorAll<HTMLElement>(".ic-zoom-section").forEach((section) => {
+        const bg      = section.querySelector<HTMLElement>(".ic-zoom-bg");
+        const content = section.querySelector<HTMLElement>(".ic-zoom-content");
+        const rect    = section.getBoundingClientRect();
+
+        // Enter progress (0 = bottom of screen, 1 = fully in view)
+        const enterP = Math.max(0, Math.min(1, (vh - rect.top) / (vh + rect.height)));
+
+        if (rect.top >= 0) {
+          // Approaching: bg starts zoomed-in, normalises as it enters
+          if (bg) {
+            bg.style.transform = `scale(${Math.max(1, 1.18 - enterP * 0.18)})`;
+            bg.style.filter    = "";
+          }
+          if (content) { content.style.transform = ""; content.style.opacity = ""; }
+        } else {
+          // Exiting upward: bg keeps zooming + blurs, content lifts + fades
+          const exitP = Math.min(1, Math.abs(rect.top) / (vh * 0.75));
+          if (bg) {
+            bg.style.transform = `scale(${1 + exitP * 0.22})`;
+            bg.style.filter    = `blur(${(exitP * 10).toFixed(1)}px)`;
+          }
+          if (content) {
+            content.style.transform = `translateY(${-exitP * 55}px)`;
+            content.style.opacity   = String(Math.max(0, 1 - exitP * 1.5));
+          }
+        }
+      });
+
+      /* 3 ── Cloud break: parallax on the inner blob layer */
+      document.querySelectorAll<HTMLElement>(".cloud-break-inner").forEach((inner) => {
+        const wrap = inner.closest<HTMLElement>(".cloud-break");
+        if (!wrap) return;
+        const rect = wrap.getBoundingClientRect();
+        const p    = Math.max(0, Math.min(1, (vh - rect.top) / (vh + rect.height)));
+        inner.style.transform = `scale(${1.1 + p * 0.12}) translateY(${(0.5 - p) * 50}px)`;
       });
     };
 
-    window.addEventListener("scroll", update, { passive: true });
-    update();
-    return () => window.removeEventListener("scroll", update);
-  }, []);
-}
-
-/* ── Hero zoom (opposite: zooms IN as you scroll away) */
-function useHeroZoom() {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const update = () => {
-      const scrollY = window.scrollY;
-      const vh = window.innerHeight;
-      const progress = Math.min(1, scrollY / vh);
-      // zooms in slightly as you scroll away from hero
-      const scale = 1 + progress * 0.18;
-      el.style.transform = `scale(${scale})`;
-      el.style.opacity = `${1 - progress * 0.5}`;
+    const onScroll = () => {
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(update);
     };
-    window.addEventListener("scroll", update, { passive: true });
+
+    window.addEventListener("scroll", onScroll, { passive: true });
     update();
-    return () => window.removeEventListener("scroll", update);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(rafId);
+    };
   }, []);
-  return ref;
 }
 
 /* ── Main ──────────────────────────────────────── */
 export default function LandingPage() {
   useReveal();
-  useParallaxZoom();
-  const heroBgRef = useHeroZoom();
+  useCinematicScroll();
 
   const [scrolled, setScrolled]   = useState(false);
   const [menuOpen, setMenuOpen]   = useState(false);
@@ -155,7 +177,7 @@ export default function LandingPage() {
 
       {/* HERO */}
       <section className="ic-hero" id="top">
-        <div className="ic-hero-zoom" ref={heroBgRef} />
+        <div className="ic-hero-zoom" />
 
         <div className="ic-hero-content">
           <div className="ic-badge reveal d1">
@@ -248,6 +270,9 @@ export default function LandingPage() {
           </div>
         ))}
       </div>
+
+      {/* CLOUD BREAK */}
+      <CloudBreak />
 
       {/* ZOOM SECTION 2 — Solução */}
       <section className="ic-zoom-section" style={{ minHeight: "75vh" }}>
@@ -467,6 +492,26 @@ export default function LandingPage() {
         </div>
       </footer>
     </>
+  );
+}
+
+/* ── Cloud Break ────────────────────────────────── */
+function CloudBreak() {
+  return (
+    <div className="cloud-break">
+      <div className="cloud-break-inner">
+        <div className="cb-l1" />
+        <div className="cb-l2" />
+        <div className="cb-l3" />
+        <div className="cb-l4" />
+        <div className="cb-stars" />
+        <div className="cb-vignette" />
+        <div className="cb-ring" />
+        <div className="cb-icon">
+          <HexIcon size={48} />
+        </div>
+      </div>
+    </div>
   );
 }
 
