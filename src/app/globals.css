@@ -642,6 +642,29 @@ ul { list-style: none; }
 }
 .ic-vis-col.hi { background: var(--blue); }
 
+/* Agent step dots */
+.ic-vis-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: rgba(59,130,246,0.2);
+  border: 1px solid rgba(59,130,246,0.3);
+}
+.ic-vis-dot.done   { background: rgba(59,130,246,0.6); border-color: var(--blue); }
+.ic-vis-dot.active { background: var(--blue); border-color: var(--blue-lt); box-shadow: 0 0 6px rgba(59,130,246,0.7); }
+
+/* Workflow node chips */
+.ic-vis-chip {
+  font-size: 7px;
+  font-family: monospace;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: rgba(59,130,246,0.12);
+  border: 1px solid rgba(59,130,246,0.22);
+  color: var(--blue-lt);
+  white-space: nowrap;
+}
+
 /* ── STATS ───────────────────────────────────────── */
 .ic-stats {
   display: grid;
@@ -1044,6 +1067,52 @@ ul { list-style: none; }
 @keyframes cb-drift {
   from { transform: translate(-2.5%, -2%) scale(1);    }
   to   { transform: translate( 2.5%,  2%) scale(1.06); }
+}
+
+/* ── Zoom section decorative elements ───────────── */
+.ic-zoom-deco {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  right: 0;
+  width: 45%;
+  overflow: hidden;
+}
+.deco-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(59,130,246,0.12);
+}
+.deco-ring-1 {
+  width: 420px; height: 420px;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(59,130,246,0.06);
+  box-shadow: 0 0 80px rgba(59,130,246,0.08);
+}
+.deco-ring-2 {
+  width: 620px; height: 620px;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(59,130,246,0.03);
+  border-color: rgba(59,130,246,0.07);
+}
+.deco-ring-3 {
+  width: 820px; height: 820px;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: transparent;
+  border-color: rgba(59,130,246,0.04);
+}
+.deco-orb {
+  position: absolute;
+  width: 300px; height: 300px;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(59,130,246,0.25) 0%, transparent 70%);
+  filter: blur(30px);
 }
 
 /* ── Dashboard badge helpers ─────────────────────── */
