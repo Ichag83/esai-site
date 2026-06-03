@@ -132,7 +132,11 @@ export default function LandingPage() {
 
       {/* ── HERO ── */}
       <section className="ic-hero" id="top">
-        <div className="ic-hero-zoom"/>
+        <div className="ic-hero-zoom">
+          <div className="hero-blob hero-blob-1"/>
+          <div className="hero-blob hero-blob-2"/>
+          <div className="hero-blob hero-blob-3"/>
+        </div>
         <div className="ic-hero-content">
           <div className="ic-badge reveal"><span className="ic-badge-dot"/>Agência de IA Premium · Automação Inteligente</div>
           <h1 className="ic-hero-title reveal">Automatize o futuro<br/>do seu negócio com <span className="hl">IA.</span></h1>
