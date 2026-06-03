@@ -25,13 +25,27 @@ function useCinematicScroll() {
     const tick = () => {
       const vh = window.innerHeight;
 
-      const heroBg = document.querySelector<HTMLElement>(".ic-hero-zoom");
-      if (heroBg) {
-        const p = Math.min(1, window.scrollY / vh);
-        heroBg.style.transform = `scale(${1 + p * 0.18})`;
-        heroBg.style.opacity   = String(1 - p * 0.5);
+      // ── Hero: Mont-Fort zoom-out ─────────────────
+      // Background starts large (close-up) and shrinks away as you scroll,
+      // as if the camera pulls back through the sky.
+      const heroContainer = document.querySelector<HTMLElement>(".hero-scroll-container");
+      const heroBg        = document.querySelector<HTMLElement>(".ic-hero-zoom");
+      const heroContent   = document.querySelector<HTMLElement>(".ic-hero-content");
+      const heroHint      = document.querySelector<HTMLElement>(".ic-scroll-hint");
+      if (heroContainer && heroBg) {
+        const scrollable = heroContainer.offsetHeight - vh;
+        const p = Math.min(1, Math.max(0, window.scrollY / scrollable));
+        // scale: 1.6 (close) → 1.0 (far / "sky" revealed)
+        heroBg.style.transform = `scale(${1.6 - p * 0.6})`;
+        if (heroContent) {
+          // text fades and rises as camera pulls back
+          heroContent.style.opacity   = String(Math.max(0, 1 - p * 2.4));
+          heroContent.style.transform = `translateY(${p * -50}px)`;
+        }
+        if (heroHint) heroHint.style.opacity = String(Math.max(0, 1 - p * 5));
       }
 
+      // ── Zoom sections: enter zoomed, exit blur ───
       document.querySelectorAll<HTMLElement>(".ic-zoom-section").forEach((sec) => {
         const bg  = sec.querySelector<HTMLElement>(".ic-zoom-bg");
         const cnt = sec.querySelector<HTMLElement>(".ic-zoom-content");
@@ -47,6 +61,7 @@ function useCinematicScroll() {
         }
       });
 
+      // ── Node break parallax ──────────────────────
       document.querySelectorAll<HTMLElement>(".cloud-break-inner").forEach((inner) => {
         const wrap = inner.closest<HTMLElement>(".cloud-break");
         if (!wrap) return;
@@ -130,25 +145,27 @@ export default function LandingPage() {
         </div>
       )}
 
-      {/* ── HERO ── */}
-      <section className="ic-hero" id="top">
-        <div className="ic-hero-zoom">
-          <div className="hero-blob hero-blob-1"/>
-          <div className="hero-blob hero-blob-2"/>
-          <div className="hero-blob hero-blob-3"/>
-        </div>
-        <div className="ic-hero-content">
-          <div className="ic-badge reveal"><span className="ic-badge-dot"/>Agência de IA Premium · Automação Inteligente</div>
-          <h1 className="ic-hero-title reveal">Automatize o futuro<br/>do seu negócio com <span className="hl">IA.</span></h1>
-          <p className="ic-hero-sub reveal">Ice &amp; Code constrói sistemas de automação com inteligência artificial — do agente autônomo à integração completa. Menos trabalho manual, mais escala e resultado.</p>
-          <div className="ic-hero-actions reveal">
-            <Link href="/login" className="btn-primary btn-lg">Falar com a equipe <Arrow/></Link>
-            <a href="#processo" className="btn-ghost btn-lg">Ver como funciona <Play/></a>
+      {/* ── HERO — sticky scroll container for Mont-Fort zoom-out ── */}
+      <div className="hero-scroll-container">
+        <section className="ic-hero" id="top">
+          <div className="ic-hero-zoom">
+            <div className="hero-blob hero-blob-1"/>
+            <div className="hero-blob hero-blob-2"/>
+            <div className="hero-blob hero-blob-3"/>
           </div>
-          <p className="ic-hero-note reveal">Projetos sob medida. Entrega em semanas, não meses.</p>
-        </div>
-        <div className="ic-scroll-hint"><div className="ic-scroll-bar"/><span>scroll</span></div>
-      </section>
+          <div className="ic-hero-content">
+            <div className="ic-badge reveal"><span className="ic-badge-dot"/>Agência de IA Premium · Automação Inteligente</div>
+            <h1 className="ic-hero-title reveal">Automatize o futuro<br/>do seu negócio com <span className="hl">IA.</span></h1>
+            <p className="ic-hero-sub reveal">Ice &amp; Code constrói sistemas de automação com inteligência artificial — do agente autônomo à integração completa. Menos trabalho manual, mais escala e resultado.</p>
+            <div className="ic-hero-actions reveal">
+              <Link href="/login" className="btn-primary btn-lg">Falar com a equipe <Arrow/></Link>
+              <a href="#processo" className="btn-ghost btn-lg">Ver como funciona <Play/></a>
+            </div>
+            <p className="ic-hero-note reveal">Projetos sob medida. Entrega em semanas, não meses.</p>
+          </div>
+          <div className="ic-scroll-hint"><div className="ic-scroll-bar"/><span>scroll</span></div>
+        </section>
+      </div>
 
       {/* MARQUEE */}
       <div className="ic-marquee">

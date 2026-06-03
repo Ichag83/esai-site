@@ -187,9 +187,16 @@ ul { list-style: none; }
 .btn-lg { padding: 14px 30px; font-size: 14px; border-radius: 8px; }
 
 /* ── HERO ─────────────────────────────────────────── */
-.ic-hero {
+/* Outer container: provides the scroll distance for the sticky zoom */
+.hero-scroll-container {
   position: relative;
-  min-height: 100svh;
+  height: 260vh;
+}
+
+.ic-hero {
+  position: sticky;
+  top: 0;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1015,7 +1022,8 @@ ul { list-style: none; }
 /* .ic-zoom-bg and .ic-zoom-content are animated by JS — no CSS transition */
 .ic-zoom-bg      { will-change: transform, filter; transition: none !important; }
 .ic-zoom-content { will-change: transform, opacity; transition: none !important; }
-.ic-hero-zoom    { will-change: transform, opacity; transition: none !important; }
+.ic-hero-zoom    { will-change: transform; transition: none !important; }
+.ic-hero-content { will-change: transform, opacity; transition: none !important; }
 
 /* ── Cloud Break ─────────────────────────────────── */
 .cloud-break {
