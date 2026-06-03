@@ -1,75 +1,84 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 
-/* ── Scroll reveal hook ─────────────────────────── */
+/* ── Scroll reveal ─────────────────────────────── */
 function useReveal() {
   useEffect(() => {
-    const els = document.querySelectorAll(".reveal, .reveal-line");
+    const els = document.querySelectorAll(".reveal, .reveal-up");
     const io = new IntersectionObserver(
       (entries) => {
         entries.forEach((e) => {
           if (e.isIntersecting) {
-            e.target.classList.add("visible");
+            e.target.classList.add("in");
             io.unobserve(e.target);
           }
         });
       },
-      { threshold: 0.15 }
+      { threshold: 0.12 }
     );
     els.forEach((el) => io.observe(el));
     return () => io.disconnect();
   }, []);
 }
 
-/* ── Custom cursor ──────────────────────────────── */
-function Cursor() {
-  const dotRef  = useRef<HTMLDivElement>(null);
-  const ringRef = useRef<HTMLDivElement>(null);
-  const pos  = useRef({ x: 0, y: 0 });
-  const ring = useRef({ x: 0, y: 0 });
-
+/* ── Parallax zoom on scroll ───────────────────── */
+function useParallaxZoom() {
   useEffect(() => {
-    const move = (e: MouseEvent) => {
-      pos.current = { x: e.clientX, y: e.clientY };
-      if (dotRef.current) {
-        dotRef.current.style.left = `${e.clientX}px`;
-        dotRef.current.style.top  = `${e.clientY}px`;
-      }
-    };
-    window.addEventListener("mousemove", move);
+    const targets = document.querySelectorAll<HTMLElement>(".ic-zoom-bg");
 
-    let raf: number;
-    const animate = () => {
-      ring.current.x += (pos.current.x - ring.current.x) * 0.12;
-      ring.current.y += (pos.current.y - ring.current.y) * 0.12;
-      if (ringRef.current) {
-        ringRef.current.style.left = `${ring.current.x}px`;
-        ringRef.current.style.top  = `${ring.current.y}px`;
-      }
-      raf = requestAnimationFrame(animate);
+    const update = () => {
+      targets.forEach((el) => {
+        const wrapper = el.parentElement;
+        if (!wrapper) return;
+        const rect = wrapper.getBoundingClientRect();
+        const vh = window.innerHeight;
+        const progress = (vh - rect.top) / (vh + rect.height);
+        const clamped = Math.max(0, Math.min(1, progress));
+        // enters viewport: scale 1.15 → 1.0  (zoom out as it enters)
+        const scale = 1.15 - clamped * 0.15;
+        el.style.transform = `scale(${Math.max(1, scale)})`;
+      });
     };
-    raf = requestAnimationFrame(animate);
-    return () => {
-      window.removeEventListener("mousemove", move);
-      cancelAnimationFrame(raf);
-    };
+
+    window.addEventListener("scroll", update, { passive: true });
+    update();
+    return () => window.removeEventListener("scroll", update);
   }, []);
-
-  return (
-    <>
-      <div ref={dotRef}  className="cursor-dot"  />
-      <div ref={ringRef} className="cursor-ring" />
-    </>
-  );
 }
 
-/* ── Main page ──────────────────────────────────── */
+/* ── Hero zoom (opposite: zooms IN as you scroll away) */
+function useHeroZoom() {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const update = () => {
+      const scrollY = window.scrollY;
+      const vh = window.innerHeight;
+      const progress = Math.min(1, scrollY / vh);
+      // zooms in slightly as you scroll away from hero
+      const scale = 1 + progress * 0.18;
+      el.style.transform = `scale(${scale})`;
+      el.style.opacity = `${1 - progress * 0.5}`;
+    };
+    window.addEventListener("scroll", update, { passive: true });
+    update();
+    return () => window.removeEventListener("scroll", update);
+  }, []);
+  return ref;
+}
+
+/* ── Main ──────────────────────────────────────── */
 export default function LandingPage() {
   useReveal();
-  const [scrolled,    setScrolled]    = useState(false);
-  const [menuOpen,    setMenuOpen]    = useState(false);
+  useParallaxZoom();
+  const heroBgRef = useHeroZoom();
+
+  const [scrolled, setScrolled]   = useState(false);
+  const [menuOpen, setMenuOpen]   = useState(false);
+  const [activeTab, setActiveTab] = useState(0);
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 40);
@@ -77,326 +86,381 @@ export default function LandingPage() {
     return () => window.removeEventListener("scroll", fn);
   }, []);
 
+  const NAV_LINKS = [
+    ["#manifesto", "Manifesto"],
+    ["#solucoes",  "Soluções"],
+    ["#processo",  "Processo"],
+    ["#precos",    "Preços"],
+  ];
+
+  const TABS = [
+    {
+      label: "Análise",
+      num: "01",
+      title: "Análise de Criativos",
+      body: "Nossa IA desvenda o que funciona nos seus melhores anúncios — hooks, CTAs, timing emocional e elementos visuais que realmente convertem.",
+      tags: ["Pattern Extraction", "IA Scoring", "Benchmarks"],
+      visual: <VisAnalise />,
+    },
+    {
+      label: "Geração",
+      num: "02",
+      title: "Geração de Vídeo UGC",
+      body: "Crie dezenas de vídeos de alta conversão com atores virtuais, roteiros otimizados e variações A/B prontas para veicular — em minutos.",
+      tags: ["UGC Sintético", "Multi-variante", "Pronto para ads"],
+      visual: <VisGeracao />,
+    },
+    {
+      label: "Blueprints",
+      num: "03",
+      title: "Blueprints Inteligentes",
+      body: "Transforme insights em receitas criativas reutilizáveis. Escale o que funciona com consistência, velocidade e previsibilidade.",
+      tags: ["Templates dinâmicos", "Escala criativa", "Iteração rápida"],
+      visual: <VisBlueprint />,
+    },
+  ];
+
   return (
     <>
-      <Cursor />
-
       {/* NAV */}
-      <nav className={`mf-nav ${scrolled ? "scrolled" : ""}`}>
-        <Link href="/" className="mf-nav-logo">
-          <HexLogo size={22} />
+      <nav className={`ic-nav ${scrolled ? "scrolled" : ""}`}>
+        <Link href="/" className="ic-logo">
+          <HexIcon size={22} />
           Ice &amp; Code
         </Link>
-
-        <ul className="mf-nav-links">
-          {[["#manifesto","Manifesto"],["#servicos","Serviços"],["#processo","Processo"],["#precos","Preços"]].map(([h,l]) => (
+        <ul className="ic-nav-links">
+          {NAV_LINKS.map(([h, l]) => (
             <li key={h}><a href={h}>{l}</a></li>
           ))}
         </ul>
-
-        <div className="mf-nav-cta">
-          <Link href="/login" className="btn">Entrar</Link>
-          <Link href="/login" className="btn-fill">Começar →</Link>
+        <div className="ic-nav-right">
+          <Link href="/login" className="btn-ghost">Entrar</Link>
+          <Link href="/login" className="btn-primary">Começar →</Link>
         </div>
-
-        <button className="mf-menu-toggle" onClick={() => setMenuOpen(!menuOpen)} aria-label="Menu">
+        <button className="ic-hamburger" onClick={() => setMenuOpen(!menuOpen)} aria-label="Menu">
           <span /><span /><span />
         </button>
       </nav>
 
       {menuOpen && (
-        <div className="mf-mobile-menu">
-          {[["#manifesto","Manifesto"],["#servicos","Serviços"],["#processo","Processo"],["#precos","Preços"]].map(([h,l]) => (
+        <div className="ic-mobile-menu">
+          {NAV_LINKS.map(([h, l]) => (
             <a key={h} href={h} onClick={() => setMenuOpen(false)}>{l}</a>
           ))}
-          <Link href="/login" className="btn-fill" onClick={() => setMenuOpen(false)}>Começar →</Link>
+          <Link href="/login" className="btn-primary" onClick={() => setMenuOpen(false)}>
+            Começar →
+          </Link>
         </div>
       )}
 
       {/* HERO */}
-      <section className="mf-hero" id="top">
-        <div className="mf-hero-bg" />
+      <section className="ic-hero" id="top">
+        <div className="ic-hero-zoom" ref={heroBgRef} />
 
-        <div className="mf-hero-content">
-          <div className="mf-hero-eyebrow reveal">
-            <div className="mf-hero-eyebrow-line" />
-            <span className="label-blue">Plataforma de Inteligência Criativa</span>
+        <div className="ic-hero-content">
+          <div className="ic-badge reveal d1">
+            <span className="ic-badge-dot" />
+            Powered by IA · Feito para criativos
           </div>
 
-          <h1 className="mf-hero-title">
-            <div className="reveal-line"><span>Criatividade</span></div>
-            <div className="reveal-line" style={{ transitionDelay: "80ms" }}><span>que <em>escala.</em></span></div>
+          <h1 className="ic-hero-title reveal d2">
+            Criatividade com<br />
+            <span className="hl">Inteligência</span> que escala.
           </h1>
 
-          <div className="mf-hero-bottom">
-            <p className="mf-hero-sub reveal" style={{ transitionDelay: "200ms" }}>
-              Ice &amp; Code transforma briefings em criativos de alta performance.
-              Analise, gere e otimize peças de vídeo e imagem com IA generativa.
-            </p>
-            <div className="mf-hero-actions reveal" style={{ transitionDelay: "280ms" }}>
-              <Link href="/login" className="btn-fill">Começar grátis</Link>
-              <a href="#processo" className="btn-stroke">Ver como funciona</a>
-            </div>
+          <p className="ic-hero-sub reveal d3">
+            Ice &amp; Code transforma briefings em criativos de alta performance.
+            Analise, gere e otimize peças de vídeo e imagem com IA generativa.
+          </p>
+
+          <div className="ic-hero-actions reveal d4">
+            <Link href="/login" className="btn-primary btn-lg">
+              Começar grátis <Arrow />
+            </Link>
+            <a href="#processo" className="btn-ghost btn-lg">
+              Ver como funciona <Play />
+            </a>
           </div>
+
+          <p className="ic-hero-note reveal d4">Sem cartão de crédito. Plano gratuito disponível.</p>
         </div>
 
-        <div className="mf-scroll-hint">
-          <div className="mf-scroll-line" />
-          <span>Scroll</span>
+        <div className="ic-scroll-hint">
+          <div className="ic-scroll-bar" />
+          <span>scroll</span>
         </div>
       </section>
 
       {/* MARQUEE */}
-      <div className="mf-marquee-section">
-        <div className="mf-marquee-track">
-          {Array(4).fill(null).map((_, i) => (
-            <div className="mf-marquee-item" key={i}>
-              {["Análise de Criativos","Geração de Vídeo","UGC Sintético","Blueprints IA","Performance de Ads","Escala Criativa"].map((t) => (
-                <span key={t} className="mf-marquee-item">
-                  <span className="mf-marquee-text">{t}</span>
-                  <span className="mf-marquee-dot" />
-                </span>
-              ))}
-            </div>
-          ))}
+      <div className="ic-marquee">
+        <div className="ic-marquee-track">
+          {Array(4).fill(null).map((_, i) =>
+            ["Análise de Criativos", "Geração de Vídeo", "UGC Sintético", "Blueprints IA", "Performance de Ads", "Escala Criativa"].map((t) => (
+              <span className="ic-marquee-item" key={`${i}-${t}`}>
+                <span className="ic-marquee-text">{t}</span>
+                <span className="ic-marquee-sep" />
+              </span>
+            ))
+          )}
         </div>
       </div>
 
-      {/* MANIFESTO */}
-      <section className="mf-section" id="manifesto">
-        <div className="mf-section-inner">
-          <div className="mf-about">
-            <div className="mf-about-left reveal">
-              <div className="label" style={{ marginBottom: 20 }}>01 — Manifesto</div>
-              <div className="mf-about-number">01</div>
-            </div>
-            <div className="mf-about-right stagger">
-              <h2 className="mf-about-title reveal">
-                Criatividade não deveria ser<br />
-                um gargalo.<br />
-                <em>Deveria ser vantagem.</em>
-              </h2>
-              <p className="mf-about-body reveal">
-                Equipes criativas perdem horas em trabalho repetitivo: adaptar formatos,
-                reescrever roteiros, A/B testar variações manualmente. Ice &amp; Code existe para
-                mudar isso. Combinamos análise profunda de criativos existentes com geração
-                generativa para que sua equipe foque no que realmente importa — a estratégia
-                e a ideia original.
-              </p>
-            </div>
-          </div>
+      {/* ZOOM SECTION 1 — Manifesto */}
+      <section className="ic-zoom-section" id="manifesto" style={{ minHeight: "80vh" }}>
+        <div
+          className="ic-zoom-bg"
+          style={{
+            background:
+              "radial-gradient(ellipse 80% 70% at 65% 45%, rgba(37,99,235,0.2) 0%, rgba(99,102,241,0.08) 50%, transparent 75%), linear-gradient(135deg, #060f1f 0%, #030b18 100%)",
+          }}
+        />
+        <div className="ic-zoom-overlay" />
+        <div className="ic-zoom-content">
+          <div className="ic-zoom-label reveal">01 — Manifesto</div>
+          <h2 className="ic-zoom-title reveal">
+            Criatividade não deveria ser<br />
+            um gargalo.<br />
+            <span className="hl">Deveria ser vantagem.</span>
+          </h2>
+          <p className="ic-zoom-body reveal">
+            Equipes criativas perdem horas em trabalho repetitivo: adaptar formatos,
+            reescrever roteiros, testar variações manualmente. Ice &amp; Code existe
+            para mudar isso. Combinamos análise profunda com geração generativa para
+            que sua equipe foque no que realmente importa.
+          </p>
+          <Link href="/login" className="btn-primary reveal">
+            Conhecer a plataforma <Arrow />
+          </Link>
         </div>
       </section>
 
       {/* STATS */}
-      <section className="mf-section" style={{ padding: 0 }}>
-        <div className="mf-stats-grid">
-          {[
-            { value: "10", suffix: "×", label: "mais criativos produzidos por sprint" },
-            { value: "60", suffix: "%", label: "redução no custo por criativo" },
-            { value: "3.2", suffix: "×", label: "melhora média em CTR" },
-            { value: "48", suffix: "h", label: "do briefing ao vídeo finalizado" },
-          ].map((s, i) => (
-            <div className="mf-stat-cell reveal" key={s.label} style={{ transitionDelay: `${i * 80}ms` }}>
-              <div className="mf-stat-value">{s.value}<span>{s.suffix}</span></div>
-              <div className="mf-stat-label">{s.label}</div>
-            </div>
+      <div className="ic-stats" id="solucoes">
+        {[
+          { v: "10×",  l: "mais criativos produzidos por sprint" },
+          { v: "60%",  l: "redução no custo por criativo" },
+          { v: "3.2×", l: "melhora média em CTR" },
+          { v: "48h",  l: "do briefing ao vídeo finalizado" },
+        ].map((s, i) => (
+          <div className={`ic-stat reveal d${i + 1}`} key={s.l}>
+            <div className="ic-stat-val">{s.v}</div>
+            <div className="ic-stat-label">{s.l}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* ZOOM SECTION 2 — Solução */}
+      <section className="ic-zoom-section" style={{ minHeight: "75vh" }}>
+        <div
+          className="ic-zoom-bg"
+          style={{
+            background:
+              "radial-gradient(ellipse 70% 70% at 35% 55%, rgba(139,92,246,0.18) 0%, rgba(37,99,235,0.1) 45%, transparent 70%), linear-gradient(135deg, #07101f 0%, #030b18 100%)",
+          }}
+        />
+        <div className="ic-zoom-overlay" style={{ background: "linear-gradient(to right, rgba(3,11,24,0.9) 40%, rgba(3,11,24,0.35) 100%)" }} />
+        <div className="ic-zoom-content">
+          <div className="ic-zoom-label reveal">02 — Por que Ice &amp; Code</div>
+          <h2 className="ic-zoom-title reveal">
+            A IA que entende<br />
+            <span className="hl">performance criativa.</span>
+          </h2>
+          <p className="ic-zoom-body reveal">
+            Diferente de ferramentas genéricas, nossa IA foi treinada para entender
+            o que faz um criativo de mídia paga converter. Analisamos estrutura
+            narrativa, timing emocional, elementos visuais e padrões de sucesso
+            do seu mercado.
+          </p>
+          <div className="ic-zoom-tags reveal">
+            {["IA Generativa", "Video UGC", "Análise Semântica", "Performance"].map((t) => (
+              <span className="ic-tag" key={t}>{t}</span>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* SLIDE TABS — Processo / Produto */}
+      <section className="ic-slides-section" id="processo">
+        <div className="ic-slides-header">
+          <div className="ic-section-badge reveal">03 — Produto</div>
+          <h2 className="ic-section-title reveal">
+            Tudo que você precisa,<br />
+            <span className="hl">num único lugar.</span>
+          </h2>
+          <p className="ic-section-sub reveal">
+            Do upload do criativo existente à geração do próximo hit — end-to-end.
+          </p>
+        </div>
+
+        <div className="ic-slide-tabs reveal">
+          {TABS.map((t, i) => (
+            <button
+              key={t.label}
+              className={`ic-tab ${activeTab === i ? "active" : ""}`}
+              onClick={() => setActiveTab(i)}
+            >
+              {t.label}
+            </button>
           ))}
         </div>
+
+        {TABS.map((t, i) => (
+          <div className={`ic-slide-panel ${activeTab === i ? "active" : ""}`} key={t.num}>
+            <div className="ic-slide-text">
+              <div className="ic-slide-num">{t.num}</div>
+              <h3 className="ic-slide-title">{t.title}</h3>
+              <p className="ic-slide-body">{t.body}</p>
+              <div className="ic-zoom-tags">
+                {t.tags.map((tag) => (
+                  <span className="ic-tag" key={tag}>{tag}</span>
+                ))}
+              </div>
+            </div>
+            <div className="ic-slide-visual">
+              <div className="ic-vis-glow" />
+              <div className="ic-slide-visual-inner">{t.visual}</div>
+            </div>
+          </div>
+        ))}
       </section>
 
       {/* SERVICES */}
-      <section className="mf-section" id="servicos">
-        <div className="mf-section-inner">
-          <div className="mf-services-header">
+      <section className="ic-services">
+        <div className="ic-services-inner">
+          <div className="ic-services-head">
             <div>
-              <div className="label reveal" style={{ marginBottom: 16 }}>02 — Serviços</div>
-              <h2 className="mf-services-title reveal">
+              <div className="ic-section-badge reveal">04 — Serviços</div>
+              <h2 className="ic-section-title reveal" style={{ textAlign: "left" }}>
                 O que fazemos<br />
-                <em>por você</em>
+                <span className="hl">por você</span>
               </h2>
             </div>
-            <Link href="/login" className="btn reveal">Ver todos os recursos →</Link>
+            <Link href="/login" className="btn-ghost reveal">Ver todos os recursos →</Link>
           </div>
 
           {[
-            {
-              num: "01",
-              name: "Análise de Criativos",
-              desc: "Entenda o que funciona nos seus melhores anúncios. Nossa IA extrai padrões, hooks, CTAs e elementos visuais que geram performance.",
-            },
-            {
-              num: "02",
-              name: "Geração de Vídeo UGC",
-              desc: "Crie vídeos UGC de alta conversão com atores virtuais, roteiros otimizados e variações A/B prontas para veicular.",
-            },
-            {
-              num: "03",
-              name: "Blueprints Inteligentes",
-              desc: "Transforme análises em receitas de criativos reutilizáveis. Escale o que funciona com consistência e velocidade.",
-            },
-            {
-              num: "04",
-              name: "Otimização Contínua",
-              desc: "Monitore a performance dos criativos gerados e receba recomendações automáticas para novas iterações.",
-            },
+            { n: "01", name: "Análise de Criativos",    desc: "Entenda o que funciona nos seus melhores anúncios. A IA extrai padrões, hooks, CTAs e elementos visuais que geram performance." },
+            { n: "02", name: "Geração de Vídeo UGC",    desc: "Vídeos UGC de alta conversão com atores virtuais, roteiros otimizados e variações A/B prontas para veicular." },
+            { n: "03", name: "Blueprints Inteligentes", desc: "Transforme análises em receitas de criativos reutilizáveis. Escale o que funciona com consistência e velocidade." },
+            { n: "04", name: "Otimização Contínua",     desc: "Monitore a performance dos criativos gerados e receba recomendações automáticas para novas iterações." },
           ].map((s, i) => (
-            <div className="mf-service-row reveal" key={s.num} style={{ transitionDelay: `${i * 60}ms` }}>
-              <div className="mf-service-num">{s.num}</div>
-              <div className="mf-service-body">
-                <div className="mf-service-name">{s.name}</div>
-                <div className="mf-service-desc">{s.desc}</div>
+            <div className={`ic-service-row reveal d${(i % 4) + 1}`} key={s.n}>
+              <div className="ic-svc-num">{s.n}</div>
+              <div>
+                <div className="ic-svc-name">{s.name}</div>
+                <div className="ic-svc-desc">{s.desc}</div>
               </div>
-              <div className="mf-service-row-arrow">
-                <ArrowRight size={20} />
-              </div>
+              <div className="ic-svc-arrow"><Arrow size={20} /></div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* PROCESS */}
-      <section className="mf-section" id="processo">
-        <div className="mf-section-inner">
-          <div className="label reveal" style={{ marginBottom: 16 }}>03 — Processo</div>
-          <h2 className="mf-about-title reveal" style={{ marginBottom: 56 }}>
-            De briefing a criativo<br />
-            <em>em minutos</em>
-          </h2>
+      {/* PRICING */}
+      <section className="ic-pricing" id="precos">
+        <div className="ic-pricing-inner">
+          <div style={{ textAlign: "center" }}>
+            <div className="ic-section-badge reveal">05 — Planos</div>
+            <h2 className="ic-section-title reveal">
+              Simples e <span className="hl">transparente</span>
+            </h2>
+            <p className="ic-section-sub reveal">Escale conforme seu time cresce.</p>
+          </div>
 
-          <div className="mf-process-grid">
+          <div className="ic-pricing-grid">
             {[
               {
-                idx: "01",
-                name: "Upload & Análise",
-                text: "Importe vídeos, imagens e anúncios existentes. A IA analisa cada elemento visual, narrativo e emocional em segundos.",
+                name: "Starter", price: "Grátis", period: "para sempre",
+                desc: "Para explorar a plataforma e entender o potencial da IA criativa.",
+                feats: ["5 análises / mês", "2 gerações de vídeo", "1 usuário", "Suporte por email"],
+                cta: "Começar grátis", feature: false,
               },
               {
-                idx: "02",
-                name: "Insights & Blueprints",
-                text: "Identifique os padrões de sucesso. Gere blueprints reutilizáveis com estrutura de hook, proposta e CTA validados.",
+                name: "Pro", price: "R$ 497", period: "por mês",
+                desc: "Para equipes criativas em crescimento que precisam de volume e velocidade.",
+                feats: ["100 análises / mês", "30 gerações de vídeo", "5 usuários", "Blueprints ilimitados", "Suporte prioritário"],
+                cta: "Assinar Pro", feature: true,
               },
               {
-                idx: "03",
-                name: "Geração em Escala",
-                text: "Use os blueprints para produzir dezenas de variações com atores virtuais e voiceover em português — prontas para veicular.",
+                name: "Enterprise", price: "Custom", period: "negociado",
+                desc: "Para grandes operações com volume, segurança e SLA dedicado.",
+                feats: ["Volume ilimitado", "Usuários ilimitados", "API access", "SLA dedicado", "Onboarding personalizado"],
+                cta: "Falar com vendas", feature: false,
               },
-            ].map((p, i) => (
-              <div className="mf-process-card reveal" key={p.idx} style={{ transitionDelay: `${i * 100}ms` }}>
-                <div className="mf-process-idx">{p.idx}</div>
-                <div className="label" style={{ marginBottom: 12 }}>{p.name}</div>
-                <div className="mf-process-name">{p.name}</div>
-                <div className="mf-process-text">{p.text}</div>
+            ].map((p) => (
+              <div className={`ic-plan reveal ${p.feature ? "ic-plan--feature" : ""}`} key={p.name}>
+                {p.feature && <div className="ic-plan-topbar" />}
+                <div className="ic-plan-name">{p.name}</div>
+                <div className="ic-plan-price">{p.price}</div>
+                <div className="ic-plan-period">{p.period}</div>
+                <div className="ic-plan-desc">{p.desc}</div>
+                <ul className="ic-plan-features">
+                  {p.feats.map((f) => (
+                    <li key={f}>
+                      <CheckIcon className="ic-plan-check" />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <Link href="/login" className={p.feature ? "btn-primary" : "btn-ghost"} style={{ justifyContent: "center" }}>
+                  {p.cta}
+                </Link>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* PRICING */}
-      <section className="mf-section" id="precos">
-        <div className="mf-section-inner">
-          <div className="label reveal" style={{ marginBottom: 16 }}>04 — Planos</div>
-          <h2 className="mf-about-title reveal" style={{ marginBottom: 56 }}>
-            Simples e<br />
-            <em>transparente</em>
-          </h2>
-
-          <div className="mf-pricing-grid">
-            <PricingCard
-              plan="Starter"
-              price="Grátis"
-              period="para sempre"
-              desc="Para explorar a plataforma e entender o potencial da IA criativa."
-              features={["5 análises / mês","2 gerações de vídeo","1 usuário","Suporte por email"]}
-              cta="Começar grátis"
-              featured={false}
-            />
-            <PricingCard
-              plan="Pro"
-              price="R$ 497"
-              period="por mês"
-              desc="Para equipes criativas em crescimento que precisam de volume e velocidade."
-              features={["100 análises / mês","30 gerações de vídeo","5 usuários","Blueprints ilimitados","Suporte prioritário"]}
-              cta="Assinar Pro"
-              featured={true}
-            />
-            <PricingCard
-              plan="Enterprise"
-              price="Custom"
-              period="negociado"
-              desc="Para grandes operações criativas com volume, segurança e SLA dedicado."
-              features={["Volume ilimitado","Usuários ilimitados","API access","SLA dedicado","Onboarding personalizado"]}
-              cta="Falar com vendas"
-              featured={false}
-            />
-          </div>
-        </div>
-      </section>
-
       {/* CTA */}
-      <section className="mf-section mf-cta">
-        <div className="mf-cta-bg" />
-        <div className="mf-cta-inner">
-          <h2 className="mf-cta-title reveal">
-            Pronto para<br />
-            <em>escalar?</em>
+      <section className="ic-cta">
+        <div className="ic-cta-glow" />
+        <div className="ic-cta-inner">
+          <h2 className="ic-cta-title reveal">
+            Pronto para <span className="hl">escalar</span><br />
+            sua criatividade?
           </h2>
-          <p className="mf-cta-sub reveal">
-            Junte-se a centenas de equipes que já usam Ice &amp; Code para produzir
-            criativos de performance em escala.
+          <p className="ic-cta-sub reveal">
+            Junte-se a centenas de equipes que já usam Ice &amp; Code
+            para produzir criativos de performance em escala.
           </p>
-          <div className="mf-cta-actions reveal">
-            <Link href="/login" className="btn-fill">Começar grátis</Link>
-            <a href="mailto:contato@iceandcode.com.br" className="btn-stroke">Falar com a equipe</a>
+          <div className="ic-cta-actions reveal">
+            <Link href="/login" className="btn-primary btn-lg">Começar grátis</Link>
+            <a href="mailto:contato@iceandcode.com.br" className="btn-ghost btn-lg">Falar com a equipe</a>
           </div>
         </div>
       </section>
 
       {/* FOOTER */}
-      <footer className="mf-footer">
-        <div className="mf-footer-top">
-          <div className="mf-footer-brand">
-            <div className="mf-footer-logo">
-              <HexLogo size={20} />
+      <footer className="ic-footer">
+        <div className="ic-footer-top">
+          <div>
+            <Link href="/" className="ic-logo">
+              <HexIcon size={20} />
               Ice &amp; Code
-            </div>
-            <p className="mf-footer-tagline">
+            </Link>
+            <p className="ic-footer-tagline">
               Inteligência criativa para performance de ads em escala.
             </p>
           </div>
-
-          <div className="mf-footer-col">
-            <h4>Produto</h4>
-            <ul>
-              <li><a href="#servicos">Serviços</a></li>
-              <li><a href="#processo">Como funciona</a></li>
-              <li><a href="#precos">Preços</a></li>
-            </ul>
-          </div>
-
-          <div className="mf-footer-col">
-            <h4>Empresa</h4>
-            <ul>
-              <li><a href="#">Sobre nós</a></li>
-              <li><a href="#">Blog</a></li>
-              <li><a href="#">Carreiras</a></li>
-            </ul>
-          </div>
-
-          <div className="mf-footer-col">
-            <h4>Suporte</h4>
-            <ul>
-              <li><a href="#">Documentação</a></li>
-              <li><a href="#">Status</a></li>
-              <li><a href="mailto:contato@iceandcode.com.br">Contato</a></li>
-            </ul>
-          </div>
+          {[
+            { title: "Produto",  links: [["#solucoes","Soluções"],["#processo","Como funciona"],["#precos","Preços"]] },
+            { title: "Empresa",  links: [["#","Sobre nós"],["#","Blog"],["#","Carreiras"]] },
+            { title: "Suporte",  links: [["#","Documentação"],["#","Status"],["mailto:contato@iceandcode.com.br","Contato"]] },
+          ].map((col) => (
+            <div className="ic-footer-col" key={col.title}>
+              <h4>{col.title}</h4>
+              <ul>
+                {col.links.map(([href, label]) => (
+                  <li key={label}><a href={href}>{label}</a></li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
 
-        <div className="mf-footer-bottom">
+        <div className="ic-footer-bottom">
           <span>© 2025 Ice &amp; Code. Todos os direitos reservados.</span>
-          <div className="mf-footer-legal">
+          <div className="ic-footer-legal">
             <a href="#">Privacidade</a>
             <a href="#">Termos</a>
           </div>
@@ -406,55 +470,93 @@ export default function LandingPage() {
   );
 }
 
-/* ── Sub-components ─────────────────────────────── */
-function PricingCard({
-  plan, price, period, desc, features, cta, featured,
-}: {
-  plan: string; price: string; period: string; desc: string;
-  features: string[]; cta: string; featured: boolean;
-}) {
+/* ── Visual mockups ──────────────────────────────── */
+function VisAnalise() {
   return (
-    <div className={`mf-pricing-card reveal ${featured ? "mf-pricing-card--featured" : ""}`}>
-      {featured && <div className="mf-pricing-featured-bar" />}
-      <div className="mf-pricing-plan">{plan}</div>
-      <div className="mf-pricing-price">{price}</div>
-      <div className="mf-pricing-period">{period}</div>
-      <div className="mf-pricing-desc">{desc}</div>
-      <ul className="mf-pricing-features">
-        {features.map((f) => (
-          <li key={f}>
-            <svg className="mf-pricing-check" viewBox="0 0 14 14" fill="none">
-              <path d="M2.5 7l3 3 6-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            {f}
-          </li>
+    <div className="ic-vis-mockup">
+      <div className="ic-vis-topbar"><span /><span /><span /></div>
+      <div className="ic-vis-body">
+        <div className="ic-vis-label">Creative Analysis</div>
+        <div className="ic-vis-bar" style={{ width: "88%" }} />
+        <div className="ic-vis-bar" style={{ width: "64%", opacity: 0.6 }} />
+        <div className="ic-vis-bar" style={{ width: "76%", opacity: 0.8 }} />
+        <div className="ic-vis-chart" style={{ marginTop: 12 }}>
+          {[40,65,50,82,58,90,70].map((h,i) => (
+            <div className={`ic-vis-col ${i === 5 ? "hi" : ""}`} key={i} style={{ height: `${h}%` }} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+function VisGeracao() {
+  return (
+    <div className="ic-vis-mockup">
+      <div className="ic-vis-topbar"><span /><span /><span /></div>
+      <div className="ic-vis-body">
+        <div className="ic-vis-label">Video Generation</div>
+        <div className="ic-vis-row">
+          <div className="ic-vis-block accent" />
+          <div className="ic-vis-block" />
+        </div>
+        <div className="ic-vis-row">
+          <div className="ic-vis-block" />
+          <div className="ic-vis-block accent" />
+        </div>
+        <div className="ic-vis-bar" style={{ width: "100%", marginTop: 8 }} />
+      </div>
+    </div>
+  );
+}
+function VisBlueprint() {
+  return (
+    <div className="ic-vis-mockup">
+      <div className="ic-vis-topbar"><span /><span /><span /></div>
+      <div className="ic-vis-body">
+        <div className="ic-vis-label">Blueprint Builder</div>
+        {["Hook", "Proposta", "Prova Social", "CTA"].map((l, i) => (
+          <div className="ic-vis-row" key={l} style={{ alignItems: "center", gap: 10 }}>
+            <span style={{ fontSize: 8, color: "var(--blue-lt)", width: 60, flexShrink: 0 }}>{l}</span>
+            <div className="ic-vis-block" style={{ height: 20, opacity: 1 - i * 0.1 }} />
+          </div>
         ))}
-      </ul>
-      <Link href="/login" className={featured ? "btn-fill" : "btn-stroke"} style={{ justifyContent: "center" }}>
-        {cta}
-      </Link>
+      </div>
     </div>
   );
 }
 
-/* ── Icons ──────────────────────────────────────── */
-function HexLogo({ size = 24 }: { size?: number }) {
+/* ── Icons ───────────────────────────────────────── */
+function HexIcon({ size = 24 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 28 28" fill="none">
-      <polygon points="14,2 26,8 26,20 14,26 2,20 2,8"
-        fill="none" stroke="#29648e" strokeWidth="1.5" />
-      <polygon points="14,7 21,11 21,17 14,21 7,17 7,11"
-        fill="none" stroke="#4a90b8" strokeWidth="1" opacity="0.5" />
-      <circle cx="14" cy="14" r="2.5" fill="#4a90b8" />
+      <polygon points="14,2 26,8 26,20 14,26 2,20 2,8" fill="none" stroke="#3b82f6" strokeWidth="1.5" />
+      <polygon points="14,7 21,11 21,17 14,21 7,17 7,11" fill="none" stroke="#60a5fa" strokeWidth="1" opacity="0.5" />
+      <circle cx="14" cy="14" r="2.5" fill="#3b82f6" />
     </svg>
   );
 }
 
-function ArrowRight({ size = 16 }: { size?: number }) {
+function Arrow({ size = 16 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
-      <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor"
-        strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function Play({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+      <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M6.5 5.5l4 2.5-4 2.5V5.5z" fill="currentColor" />
+    </svg>
+  );
+}
+
+function CheckIcon({ className }: { className?: string }) {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className={className}>
+      <path d="M2.5 7l3 3 6-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }

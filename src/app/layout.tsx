@@ -1,13 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, Inter } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
-
-const cormorant = Cormorant_Garamond({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-serif",
-  display: "swap",
-});
 
 const inter = Inter({
   subsets: ["latin"],
@@ -20,7 +13,7 @@ export const metadata: Metadata = {
     default: "Ice & Code — Inteligência Criativa com IA",
     template: "%s | Ice & Code",
   },
-  description: "Plataforma de IA para análise, geração e otimização de criativos de alta performance. Do briefing ao vídeo em minutos.",
+  description: "Plataforma de IA para análise, geração e otimização de criativos de alta performance.",
   applicationName: "Ice & Code",
   robots: { index: true, follow: true },
 };
@@ -32,7 +25,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" className={`${cormorant.variable} ${inter.variable}`}>
+    <html lang="pt-BR" className={inter.variable}>
       <body suppressHydrationWarning>{children}</body>
     </html>
   );
