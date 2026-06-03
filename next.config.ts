@@ -45,6 +45,11 @@ const nextConfig: NextConfig = {
       allowedOrigins: buildAllowedOrigins(),
     },
   },
+  images: {
+    remotePatterns: [
+      { protocol: "https", hostname: "images.unsplash.com" },
+    ],
+  },
 };
 
 export default nextConfig;

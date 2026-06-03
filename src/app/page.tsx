@@ -232,8 +232,7 @@ export default function LandingPage() {
         <div
           className="ic-zoom-bg"
           style={{
-            background:
-              "radial-gradient(ellipse 80% 70% at 65% 45%, rgba(37,99,235,0.2) 0%, rgba(99,102,241,0.08) 50%, transparent 75%), linear-gradient(135deg, #060f1f 0%, #030b18 100%)",
+            backgroundImage: "url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=2000&q=80')",
           }}
         />
         <div className="ic-zoom-overlay" />
@@ -272,18 +271,17 @@ export default function LandingPage() {
       </div>
 
       {/* CLOUD BREAK */}
-      <CloudBreak />
+      <CloudBreak bgImg="https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?auto=format&fit=crop&w=2000&q=80" />
 
       {/* ZOOM SECTION 2 — Solução */}
       <section className="ic-zoom-section" style={{ minHeight: "75vh" }}>
         <div
           className="ic-zoom-bg"
           style={{
-            background:
-              "radial-gradient(ellipse 70% 70% at 35% 55%, rgba(139,92,246,0.18) 0%, rgba(37,99,235,0.1) 45%, transparent 70%), linear-gradient(135deg, #07101f 0%, #030b18 100%)",
+            backgroundImage: "url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=2000&q=80')",
           }}
         />
-        <div className="ic-zoom-overlay" style={{ background: "linear-gradient(to right, rgba(3,11,24,0.9) 40%, rgba(3,11,24,0.35) 100%)" }} />
+        <div className="ic-zoom-overlay" />
         <div className="ic-zoom-content">
           <div className="ic-zoom-label reveal">02 — Por que Ice &amp; Code</div>
           <h2 className="ic-zoom-title reveal">
@@ -496,9 +494,9 @@ export default function LandingPage() {
 }
 
 /* ── Cloud Break ────────────────────────────────── */
-function CloudBreak() {
+function CloudBreak({ bgImg }: { bgImg?: string }) {
   return (
-    <div className="cloud-break">
+    <div className="cloud-break" style={bgImg ? { backgroundImage: `url('${bgImg}')` } : {}}>
       <div className="cloud-break-inner">
         <div className="cb-l1" />
         <div className="cb-l2" />
