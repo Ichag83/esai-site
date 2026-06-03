@@ -77,7 +77,7 @@ export default function LandingPage() {
     return () => window.removeEventListener("scroll", fn);
   }, []);
 
-  const NAV = [["#manifesto","Manifesto"],["#solucoes","Soluções"],["#processo","Como funciona"],["#precos","Preços"]];
+  const NAV = [["#manifesto","Manifesto"],["#solucoes","Soluções"],["#processo","Como funciona"],["#contato","Contato"]];
 
   const TABS = [
     {
@@ -267,60 +267,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* PRICING */}
-      <section className="ic-pricing" id="precos">
-        <div className="ic-pricing-inner">
-          <div style={{textAlign:"center"}}>
-            <div className="ic-section-badge reveal">05 — Investimento</div>
-            <h2 className="ic-section-title reveal">Simples e <span className="hl">transparente</span></h2>
-            <p className="ic-section-sub reveal">Escolha o modelo ideal para o seu momento.</p>
-          </div>
-          <div className="ic-pricing-grid">
-            {[
-              {
-                name:"Discovery",
-                price:"R$ 2.500",
-                period:"projeto único",
-                desc:"Mapeamento completo dos seus processos e entrega de um roadmap de automação com IA priorizado por ROI.",
-                feats:["Entrevistas e workshops","Mapa de processos","Roadmap de automação","ROI projetado por iniciativa","Apresentação executiva"],
-                cta:"Começar discovery",
-                feature:false,
-              },
-              {
-                name:"Projeto",
-                price:"R$ 9.800",
-                period:"por entrega",
-                desc:"Desenvolvimento e deploy de um sistema completo de automação ou agente de IA personalizado para o seu negócio.",
-                feats:["Agente ou workflow sob medida","Integração com suas ferramentas","Testes e QA completos","Documentação técnica","30 dias de suporte pós-entrega"],
-                cta:"Iniciar projeto",
-                feature:true,
-              },
-              {
-                name:"Parceria",
-                price:"Custom",
-                period:"mensal",
-                desc:"Squad dedicado para projetos contínuos de IA — ideal para empresas que querem escalar automação de forma sistemática.",
-                feats:["Squad técnico dedicado","Projetos ilimitados","Reuniões estratégicas mensais","SLA com resposta em 4h","Acesso à plataforma interna"],
-                cta:"Falar sobre parceria",
-                feature:false,
-              },
-            ].map(p => (
-              <div className={`ic-plan reveal ${p.feature?"ic-plan--feature":""}`} key={p.name}>
-                {p.feature && <div className="ic-plan-topbar"/>}
-                <div className="ic-plan-name">{p.name}</div>
-                <div className="ic-plan-price">{p.price}</div>
-                <div className="ic-plan-period">{p.period}</div>
-                <div className="ic-plan-desc">{p.desc}</div>
-                <ul className="ic-plan-features">{p.feats.map(f => <li key={f}><CheckIcon className="ic-plan-check"/>{f}</li>)}</ul>
-                <Link href="/login" className={p.feature?"btn-primary":"btn-ghost"} style={{justifyContent:"center"}}>{p.cta}</Link>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* CTA */}
-      <section className="ic-cta">
+      <section className="ic-cta" id="contato">
         <div className="ic-cta-glow"/>
         <div className="ic-cta-inner">
           <h2 className="ic-cta-title reveal">Pronto para <span className="hl">automatizar</span><br/>seu negócio com IA?</h2>
