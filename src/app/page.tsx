@@ -333,14 +333,15 @@ function CloudBreak() {
   return (
     <div className="cloud-break">
       <div className="cloud-break-inner">
-        <div className="cb-glow"/>
+        <div className="cb-sun"/>
+        <div className="cb-rays"/>
         <div className="cb-cloud cb-cloud-1"/>
         <div className="cb-cloud cb-cloud-2"/>
         <div className="cb-cloud cb-cloud-3"/>
         <div className="cb-cloud cb-cloud-4"/>
         <div className="cb-cloud cb-cloud-5"/>
         <div className="cb-cloud cb-cloud-6"/>
-        <div className="cb-stars"/>
+        <div className="cb-sparkle"/>
       </div>
       <div className="cb-vignette"/>
     </div>
