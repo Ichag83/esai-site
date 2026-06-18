@@ -61,13 +61,16 @@ function useCinematicScroll() {
         }
       });
 
-      // ── Node break parallax ──────────────────────
+      // ── Cloud break parallax — rise above clouds, then descend ──
       document.querySelectorAll<HTMLElement>(".cloud-break-inner").forEach((inner) => {
         const wrap = inner.closest<HTMLElement>(".cloud-break");
         if (!wrap) return;
         const r = wrap.getBoundingClientRect();
         const p = Math.max(0, Math.min(1, (vh - r.top) / (vh + r.height)));
-        inner.style.transform = `scale(${1.08 + p * 0.1}) translateY(${(0.5 - p) * 40}px)`;
+        const rise = Math.sin(p * Math.PI); // 0 → 1 → 0 across the section
+        const scale = 1.05 + rise * 0.18;
+        const y = -rise * 70;
+        inner.style.transform = `scale(${scale}) translateY(${y}px)`;
       });
     };
 
@@ -333,15 +336,14 @@ function CloudBreak() {
   return (
     <div className="cloud-break">
       <div className="cloud-break-inner">
-        <div className="cb-sun"/>
-        <div className="cb-rays"/>
+        <div className="cb-glow"/>
         <div className="cb-cloud cb-cloud-1"/>
         <div className="cb-cloud cb-cloud-2"/>
         <div className="cb-cloud cb-cloud-3"/>
         <div className="cb-cloud cb-cloud-4"/>
         <div className="cb-cloud cb-cloud-5"/>
         <div className="cb-cloud cb-cloud-6"/>
-        <div className="cb-sparkle"/>
+        <div className="cb-stars"/>
       </div>
       <div className="cb-vignette"/>
     </div>
