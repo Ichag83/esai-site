@@ -1120,6 +1120,30 @@ ul { list-style: none; }
     radial-gradient(1px 1px at 50% 40%, rgba(255,255,255,0.6) 0%, transparent 100%),
     radial-gradient(1px 1px at 90% 25%, rgba(255,255,255,0.5) 0%, transparent 100%);
 }
+/* Gentle falling snow — ties the transition to the "Ice & Code" brand */
+.cb-snow-layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 6;
+}
+.cb-snowflake {
+  position: absolute;
+  top: -6%;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 5px 1px rgba(255,255,255,0.9), 0 0 0 1px rgba(30,64,120,0.18);
+  animation-name: cb-snow-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+@keyframes cb-snow-fall {
+  0%   { transform: translateY(0) translateX(0); opacity: 0; }
+  10%  { opacity: 0.9; }
+  90%  { opacity: 0.7; }
+  100% { transform: translateY(150vh) translateX(var(--drift, 16px)); opacity: 0; }
+}
 /* top/bottom fade to blend with adjacent dark sections */
 .cb-vignette {
   position: absolute;

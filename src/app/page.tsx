@@ -331,7 +331,29 @@ export default function LandingPage() {
   );
 }
 
-/* ── Cloud Break — Mont-Fort style cloud transition ── */
+/* Deterministic snowflake layout — avoids hydration mismatch from Math.random() */
+const SNOWFLAKES = [
+  { left: 4,  size: 4, dur: 11, delay: -2,  drift: 18  },
+  { left: 11, size: 6, dur: 14, delay: -6,  drift: -24 },
+  { left: 18, size: 3, dur: 9,  delay: -1,  drift: 12  },
+  { left: 25, size: 5, dur: 13, delay: -8,  drift: -16 },
+  { left: 32, size: 4, dur: 10, delay: -4,  drift: 20  },
+  { left: 39, size: 7, dur: 16, delay: -10, drift: -28 },
+  { left: 46, size: 3, dur: 8,  delay: -3,  drift: 14  },
+  { left: 53, size: 5, dur: 12, delay: -7,  drift: -18 },
+  { left: 60, size: 4, dur: 11, delay: -5,  drift: 22  },
+  { left: 67, size: 6, dur: 15, delay: -9,  drift: -20 },
+  { left: 74, size: 3, dur: 9,  delay: -2,  drift: 16  },
+  { left: 81, size: 5, dur: 13, delay: -6,  drift: -14 },
+  { left: 88, size: 4, dur: 10, delay: -1,  drift: 24  },
+  { left: 95, size: 6, dur: 14, delay: -8,  drift: -22 },
+  { left: 8,  size: 3, dur: 12, delay: -10, drift: 10  },
+  { left: 56, size: 7, dur: 17, delay: -3,  drift: -26 },
+  { left: 71, size: 4, dur: 10, delay: -5,  drift: 18  },
+  { left: 29, size: 3, dur: 9,  delay: -7,  drift: -12 },
+];
+
+/* ── Cloud Break — frosty cloud transition (Ice & Code) ── */
 function CloudBreak() {
   return (
     <div className="cloud-break">
@@ -344,6 +366,22 @@ function CloudBreak() {
         <div className="cb-cloud cb-cloud-5"/>
         <div className="cb-cloud cb-cloud-6"/>
         <div className="cb-stars"/>
+        <div className="cb-snow-layer">
+          {SNOWFLAKES.map((f, i) => (
+            <span
+              key={i}
+              className="cb-snowflake"
+              style={{
+                left: `${f.left}%`,
+                width: f.size,
+                height: f.size,
+                animationDuration: `${f.dur}s`,
+                animationDelay: `${f.delay}s`,
+                ["--drift" as string]: `${f.drift}px`,
+              }}
+            />
+          ))}
+        </div>
       </div>
       <div className="cb-vignette"/>
     </div>
