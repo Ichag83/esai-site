@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
 /* ── Scroll reveal ─────────────────────────────── */
@@ -215,7 +215,7 @@ export default function LandingPage() {
       </div>
 
       {/* ── CLOUD BREAK ── */}
-      <NodeBreak/>
+      <CloudBreak/>
 
       {/* ── ZOOM SECTION 2 — Solução ── */}
       <section className="ic-zoom-section">
@@ -328,127 +328,21 @@ export default function LandingPage() {
   );
 }
 
-/* ── Node Break — canvas animated nodes/wind ─────── */
-function NodeBreak() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    let animId: number;
-    let W = 0, H = 0;
-
-    const resize = () => {
-      W = canvas.offsetWidth;
-      H = canvas.offsetHeight;
-      canvas.width  = W;
-      canvas.height = H;
-    };
-    resize();
-    window.addEventListener("resize", resize, { passive: true });
-
-    const SERVICE_LABELS = ["Agent","Workflow","LLM","API","RAG","n8n","GPT-4","Claude","Vector DB","Zapier","IA"];
-
-    interface Particle {
-      x: number; y: number;
-      vx: number; vy: number;
-      r: number; alpha: number;
-      label: string | null;
-      pulse: number;
-    }
-
-    const COUNT = 90;
-    const particles: Particle[] = Array.from({ length: COUNT }, (_, i) => ({
-      x: Math.random() * (W || 1200),
-      y: Math.random() * (H || 600),
-      vx: (Math.random() * 0.35 + 0.08),
-      vy: (Math.random() * 0.18 - 0.09),
-      r: i < 12 ? Math.random() * 2 + 2 : Math.random() * 1.2 + 0.6,
-      alpha: Math.random() * 0.45 + 0.2,
-      label: i < 11 ? SERVICE_LABELS[i] : null,
-      pulse: Math.random() * Math.PI * 2,
-    }));
-
-    const MAX_DIST = 155;
-    let t = 0;
-
-    const draw = () => {
-      ctx.clearRect(0, 0, W, H);
-      t += 0.012;
-
-      for (const p of particles) {
-        p.x += p.vx;
-        p.y += p.vy + Math.sin(t + p.pulse) * 0.06;
-        p.pulse += 0.004;
-        if (p.x > W + 20) p.x = -20;
-        if (p.x < -20)    p.x = W + 20;
-        if (p.y > H + 10) p.y = -10;
-        if (p.y < -10)    p.y = H + 10;
-      }
-
-      // Lines between close nodes
-      for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
-          const d  = Math.sqrt(dx * dx + dy * dy);
-          if (d < MAX_DIST) {
-            const a = (1 - d / MAX_DIST) * 0.18;
-            ctx.beginPath();
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = `rgba(96,165,250,${a})`;
-            ctx.lineWidth = 0.6;
-            ctx.stroke();
-          }
-        }
-      }
-
-      // Nodes
-      for (const p of particles) {
-        const pulse = 0.85 + Math.sin(p.pulse * 2) * 0.15;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r * pulse, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(147,197,253,${p.alpha})`;
-        ctx.fill();
-
-        if (p.label) {
-          ctx.font = "9px Inter, sans-serif";
-          ctx.fillStyle = `rgba(186,230,253,${p.alpha * 0.75})`;
-          ctx.fillText(p.label, p.x + p.r + 4, p.y + 3);
-        }
-      }
-
-      animId = requestAnimationFrame(draw);
-    };
-
-    draw();
-
-    return () => {
-      cancelAnimationFrame(animId);
-      window.removeEventListener("resize", resize);
-    };
-  }, []);
-
+/* ── Cloud Break — Mont-Fort style cloud transition ── */
+function CloudBreak() {
   return (
     <div className="cloud-break">
       <div className="cloud-break-inner">
-        {/* Node canvas */}
-        <canvas
-          ref={canvasRef}
-          style={{ position:"absolute", inset:0, width:"100%", height:"100%" }}
-        />
-        {/* Subtle atmospheric blobs for depth */}
-        <div className="cb-l1" style={{ opacity:0.4 }}/>
-        <div className="cb-l3" style={{ opacity:0.3 }}/>
-        <div className="cb-vignette"/>
-        {/* Centre icon */}
-        <div className="cb-ring"/>
-        <div className="cb-icon"><HexIcon size={52}/></div>
+        <div className="cb-glow"/>
+        <div className="cb-cloud cb-cloud-1"/>
+        <div className="cb-cloud cb-cloud-2"/>
+        <div className="cb-cloud cb-cloud-3"/>
+        <div className="cb-cloud cb-cloud-4"/>
+        <div className="cb-cloud cb-cloud-5"/>
+        <div className="cb-cloud cb-cloud-6"/>
+        <div className="cb-stars"/>
       </div>
+      <div className="cb-vignette"/>
     </div>
   );
 }

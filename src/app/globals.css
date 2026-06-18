@@ -1030,7 +1030,7 @@ ul { list-style: none; }
   position: relative;
   height: 100vh;
   overflow: hidden;
-  background: #020d1e;
+  background: linear-gradient(180deg, #0a2a57 0%, #15407f 35%, #3b6fb0 65%, #8fb3dd 100%);
   background-size: cover;
   background-position: center;
   border-top: 1px solid rgba(59,130,246,0.2);
@@ -1043,98 +1043,96 @@ ul { list-style: none; }
   transition: none !important;
 }
 
-/* Atmospheric blob layers */
-.cb-l1, .cb-l2, .cb-l3, .cb-l4 {
+/* Soft light source behind the cloud bank */
+.cb-glow {
+  position: absolute;
+  top: 28%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60%; height: 60%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.85) 0%, rgba(214,234,255,0.4) 35%, transparent 70%);
+  filter: blur(40px);
+  animation: cb-glow-pulse 7s ease-in-out infinite;
+}
+@keyframes cb-glow-pulse {
+  0%, 100% { opacity: 0.75; }
+  50%       { opacity: 1; }
+}
+
+/* Cloud bank layers — soft white fluffy masses, Mont-Fort style */
+.cb-cloud {
   position: absolute;
   border-radius: 50%;
 }
-.cb-l1 {
-  width: 80%; height: 60%;
-  top: 18%; left: 10%;
-  background: radial-gradient(ellipse, rgba(37,99,235,0.55) 0%, rgba(37,99,235,0.1) 50%, transparent 70%);
-  filter: blur(72px);
-  animation: cb-drift 14s ease-in-out infinite alternate;
+.cb-cloud-1 {
+  width: 58%; height: 34%;
+  top: 6%; left: -8%;
+  background: radial-gradient(ellipse, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.5) 45%, transparent 78%);
+  filter: blur(35px);
+  animation: cb-drift 16s ease-in-out infinite alternate;
 }
-.cb-l2 {
-  width: 65%; height: 55%;
-  top: 25%; left: 20%;
-  background: radial-gradient(ellipse, rgba(96,165,250,0.38) 0%, rgba(96,165,250,0.08) 55%, transparent 70%);
-  filter: blur(55px);
+.cb-cloud-2 {
+  width: 68%; height: 40%;
+  top: 56%; left: 28%;
+  background: radial-gradient(ellipse, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.42) 45%, transparent 78%);
+  filter: blur(40px);
+  animation: cb-drift 21s ease-in-out infinite alternate-reverse;
+}
+.cb-cloud-3 {
+  width: 46%; height: 28%;
+  top: 28%; left: 56%;
+  background: radial-gradient(ellipse, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.4) 45%, transparent 78%);
+  filter: blur(38px);
+  animation: cb-drift 12s ease-in-out infinite alternate;
+}
+.cb-cloud-4 {
+  width: 38%; height: 24%;
+  top: 66%; left: -10%;
+  background: radial-gradient(ellipse, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.32) 50%, transparent 78%);
+  filter: blur(32px);
   animation: cb-drift 18s ease-in-out infinite alternate-reverse;
 }
-.cb-l3 {
-  width: 90%; height: 45%;
-  top: 50%; left: 5%;
-  background: radial-gradient(ellipse, rgba(59,130,246,0.28) 0%, transparent 65%);
-  filter: blur(90px);
-  animation: cb-drift 22s ease-in-out infinite alternate;
+.cb-cloud-5 {
+  width: 50%; height: 30%;
+  top: 2%; left: 58%;
+  background: radial-gradient(ellipse, rgba(255,255,255,0.82) 0%, rgba(255,255,255,0.3) 50%, transparent 78%);
+  filter: blur(45px);
+  animation: cb-drift 24s ease-in-out infinite alternate;
 }
-.cb-l4 {
-  width: 50%; height: 60%;
-  top: 5%; left: 25%;
-  background: radial-gradient(ellipse, rgba(147,197,253,0.32) 0%, transparent 65%);
-  filter: blur(65px);
-  animation: cb-drift 10s ease-in-out infinite alternate-reverse;
+.cb-cloud-6 {
+  width: 32%; height: 20%;
+  top: 44%; left: 3%;
+  background: radial-gradient(ellipse, rgba(255,255,255,0.88) 0%, rgba(255,255,255,0.36) 50%, transparent 78%);
+  filter: blur(30px);
+  animation: cb-drift 14s ease-in-out infinite alternate-reverse;
 }
-/* fine noise/star dots */
+/* fine sparkle dots catching the light */
 .cb-stars {
   position: absolute;
   inset: 0;
   background-image:
-    radial-gradient(1px 1px at 20% 30%, rgba(96,165,250,0.4) 0%, transparent 100%),
-    radial-gradient(1px 1px at 60% 15%, rgba(147,197,253,0.3) 0%, transparent 100%),
-    radial-gradient(1px 1px at 80% 55%, rgba(59,130,246,0.35) 0%, transparent 100%),
-    radial-gradient(1px 1px at 40% 70%, rgba(96,165,250,0.25) 0%, transparent 100%),
-    radial-gradient(1px 1px at 10% 60%, rgba(147,197,253,0.3) 0%, transparent 100%),
-    radial-gradient(1px 1px at 75% 80%, rgba(59,130,246,0.2) 0%, transparent 100%),
-    radial-gradient(1px 1px at 50% 40%, rgba(96,165,250,0.4) 0%, transparent 100%),
-    radial-gradient(1px 1px at 90% 25%, rgba(147,197,253,0.3) 0%, transparent 100%);
+    radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 60% 15%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 80% 55%, rgba(255,255,255,0.55) 0%, transparent 100%),
+    radial-gradient(1px 1px at 40% 70%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 10% 60%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 75% 80%, rgba(255,255,255,0.35) 0%, transparent 100%),
+    radial-gradient(1px 1px at 50% 40%, rgba(255,255,255,0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 90% 25%, rgba(255,255,255,0.5) 0%, transparent 100%);
 }
-/* top/bottom fade to blend with adjacent sections */
+/* top/bottom fade to blend with adjacent dark sections */
 .cb-vignette {
   position: absolute;
   inset: 0;
   background: linear-gradient(
     to bottom,
-    rgba(2,8,16,0.95) 0%,
-    rgba(2,8,16,0.3)  20%,
-    rgba(2,8,16,0)    45%,
-    rgba(2,8,16,0)    55%,
-    rgba(2,8,16,0.3)  80%,
-    rgba(2,8,16,0.95) 100%
+    rgba(3,10,22,0.95) 0%,
+    rgba(3,10,22,0.35) 20%,
+    rgba(3,10,22,0)    42%,
+    rgba(3,10,22,0)    58%,
+    rgba(3,10,22,0.35) 80%,
+    rgba(3,10,22,0.95) 100%
   );
-}
-/* centre glow ring */
-.cb-ring {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  width: 280px; height: 280px;
-  border-radius: 50%;
-  border: 1px solid rgba(59,130,246,0.12);
-  box-shadow:
-    0 0 60px rgba(59,130,246,0.08),
-    inset 0 0 60px rgba(59,130,246,0.05);
-}
-.cb-ring::after {
-  content: '';
-  position: absolute;
-  inset: 20px;
-  border-radius: 50%;
-  border: 1px solid rgba(96,165,250,0.08);
-}
-/* centred icon */
-.cb-icon {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 2;
-  opacity: 0.35;
-  animation: cb-pulse 4s ease-in-out infinite;
-}
-@keyframes cb-pulse {
-  0%, 100% { opacity: 0.25; transform: translate(-50%,-50%) scale(1);    }
-  50%       { opacity: 0.45; transform: translate(-50%,-50%) scale(1.06); }
 }
 @keyframes cb-drift {
   from { transform: translate(-2.5%, -2%) scale(1);    }
